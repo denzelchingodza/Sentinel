@@ -1,6 +1,6 @@
 # Sentinel
 
-I built a few projects over the past while — a document analysis tool, a personal portfolio, a couple of APIs. At some point I just wanted to open one page and see if everything was still running. Not dig through Netlify, not check Render, not wait for a user to tell me something was broken. Just one place, always watching.
+I built a few projects over the past while a document analysis tool, a personal portfolio, a couple of APIs. At some point I just wanted to open one page and see if everything was still running. Not dig through Netlify, not check Render, not wait for a user to tell me something was broken. Just one place, always watching.
 
 That curiosity turned into Sentinel.
 
@@ -18,9 +18,9 @@ It's nothing you couldn't piece together from paid tools. But building it myself
 
 ## Why I built it
 
-Partly practical — I have live projects and I want to know they're healthy without manually checking.
+Partly practical I have live projects and I want to know they're healthy without manually checking.
 
-Mostly curiosity — I wanted to know if I could build something like this from scratch, on real infrastructure, for free. No credit card, no subscription, no managed service doing the hard parts for me.
+Mostly curiosity I wanted to know if I could build something like this from scratch, on real infrastructure, for free. No credit card, no subscription, no managed service doing the hard parts for me.
 
 The answer was yes, and the process of figuring that out taught me more about cloud infrastructure than any tutorial did.
 
