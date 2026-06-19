@@ -71,6 +71,7 @@ export default function Dashboard() {
   const [formName, setFormName] = useState("");
   const [formUrl, setFormUrl] = useState("");
   const [formLoading, setFormLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null); // monitor id pending delete
 
   const fetchAll = useCallback(async () => {
     try {
@@ -124,9 +125,9 @@ export default function Dashboard() {
     finally { setFormLoading(false); }
   };
 
-  const deleteMonitor = async (id: string, name: string) => {
-    if (!confirm(`Remove "${name}"?`)) return;
+  const deleteMonitor = async (id: string) => {
     await fetch(`${API_BASE}/monitors/${id}`, { method: "DELETE" });
+    setConfirmDelete(null);
     await fetchAll();
   };
 
@@ -175,16 +176,16 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Incidents */}
-        {incidents.length > 0 && (
+        {/* Incidents — only show if the monitor still exists */}
+        {incidents.filter(inc => monitors.some(m => m.id === inc.monitorId)).length > 0 && (
           <div style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.22)", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#ef4444", animation: "pulse 1.5s ease infinite" }} />
               <span style={{ fontSize: 11, fontWeight: 700, color: "#f87171", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                {incidents.length} active incident{incidents.length > 1 ? "s" : ""}
+                {incidents.filter(inc => monitors.some(m => m.id === inc.monitorId)).length} active incident{incidents.length > 1 ? "s" : ""}
               </span>
             </div>
-            {incidents.map((inc) => {
+            {incidents.filter(inc => monitors.some(m => m.id === inc.monitorId)).map((inc) => {
               const mon = monitors.find((m) => m.id === inc.monitorId);
               return (
                 <div key={inc.id} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderTop: "1px solid rgba(239,68,68,0.15)", fontSize: 13 }}>
@@ -241,7 +242,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px 32px", alignItems: "center", gap: "0 14px", padding: "6px 16px", marginBottom: 4 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto", alignItems: "center", gap: "0 14px", padding: "6px 16px", marginBottom: 4 }}>
               {["", "Monitor", "Uptime (24h)", "Response", "Status", "Checked", ""].map((h, i) => (
                 <span key={i} style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", textAlign: i >= 2 ? "right" : "left" }}>{h}</span>
               ))}
@@ -262,7 +263,7 @@ export default function Dashboard() {
                     background: "#1e2228",
                     border: `1px solid ${isDown ? "rgba(239,68,68,0.3)" : "#2a2f38"}`,
                     borderRadius: 9, padding: "13px 16px",
-                    display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px 32px",
+                    display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto",
                     alignItems: "center", gap: "0 14px",
                   }}>
                     <div style={{ position: "relative", width: 9, height: 9 }}>
@@ -293,10 +294,23 @@ export default function Dashboard() {
                       </span>
                     </div>
                     <div style={{ textAlign: "right", fontSize: 11, color: "#3d4450" }}>{timeAgo(m.lastChecked)}</div>
-                    <button onClick={() => deleteMonitor(m.id, m.name)}
-                      style={{ background: "transparent", border: "1px solid #2a2f38", color: "#3d4450", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      ✕
-                    </button>
+                    {confirmDelete === m.id ? (
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button onClick={() => deleteMonitor(m.id)}
+                          style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", padding: "3px 8px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
+                          Remove
+                        </button>
+                        <button onClick={() => setConfirmDelete(null)}
+                          style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setConfirmDelete(m.id)}
+                        style={{ background: "transparent", border: "1px solid #2a2f38", color: "#3d4450", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        ✕
+                      </button>
+                    )}
                   </div>
                 );
               })}
