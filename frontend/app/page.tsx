@@ -1,351 +1,363 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-interface Monitor {
-  id: string;
-  name: string;
-  url: string;
-  active: boolean;
-  lastStatus: "up" | "down" | "unknown";
-  lastChecked: string | null;
-  lastResponseTime: number | null;
-  createdAt: string;
+const slides = [
+  {
+    tag: "Real time detection",
+    heading: "Know the moment something breaks",
+    body: "Every endpoint is checked every 60 seconds. The instant a site goes down, an alert fires before your users ever notice.",
+  },
+  {
+    tag: "Incident tracking",
+    heading: "Every outage, logged and timestamped",
+    body: "Incidents are recorded with start time, status code, and error detail. A recovery alert fires automatically when the endpoint comes back online.",
+  },
+  {
+    tag: "Uptime analytics",
+    heading: "24hour visibility across all monitors",
+    body: "Uptime percentage and average response time calculated across the last 1,440 checks one per minute, per endpoint.",
+  },
+  {
+    tag: "Serverless infrastructure",
+    heading: "Zero servers. Runs itself.",
+    body: "Built on AWS Lambda, DynamoDB, EventBridge, and SES. No idle infrastructure, no maintenance, no cost on the free tier.",
+  },
+];
+
+function ShieldIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <path
+        d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+        stroke="#4a9eff"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        fill="rgba(74,158,255,0.08)"
+      />
+      <path
+        d="M9 12l2 2 4-4"
+        stroke="#4a9eff"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
-interface Analytics {
-  uptime: string;
-  avgResponseTime: number;
-  total: number;
-  checksUp: number;
-  checksDown: number;
-}
+export default function Home() {
+  const [slide, setSlide] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+  const [liveCount, setLiveCount] = useState<number | null>(null);
 
-interface Incident {
-  id: string;
-  monitorId: string;
-  url: string;
-  startTime: string;
-  resolved: boolean;
-  statusCode: number;
-  error: string | null;
-}
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-function timeAgo(iso: string | null): string {
-  if (!iso) return "never";
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
-
-function statusColor(status: string) {
-  if (status === "up") return "#4A5C2F";
-  if (status === "down") return "#c0392b";
-  return "#555";
-}
-
-function statusBg(status: string) {
-  if (status === "up") return "rgba(74,92,47,0.18)";
-  if (status === "down") return "rgba(192,57,43,0.18)";
-  return "rgba(85,85,85,0.18)";
-}
-
-// ── Main Component ─────────────────────────────────────────────────────────────
-export default function Dashboard() {
-  const [monitors, setMonitors] = useState<Monitor[]>([]);
-  const [analytics, setAnalytics] = useState<Record<string, Analytics>>({});
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
-
-  // Add monitor form
-  const [showForm, setShowForm] = useState(false);
-  const [formName, setFormName] = useState("");
-  const [formUrl, setFormUrl] = useState("");
-  const [formLoading, setFormLoading] = useState(false);
-
-  const fetchAll = useCallback(async () => {
-    try {
-      const [monRes, incRes] = await Promise.all([
-        fetch(`${API_BASE}/monitors`),
-        fetch(`${API_BASE}/incidents`),
-      ]);
-      if (!monRes.ok) throw new Error("Failed to fetch monitors");
-      const mons: Monitor[] = await monRes.json();
-      const incs: Incident[] = incRes.ok ? await incRes.json() : [];
-
-      setMonitors(mons);
-      setIncidents(incs);
-
-      // Fetch analytics for each monitor
-      const analyticsMap: Record<string, Analytics> = {};
-      await Promise.all(
-        mons.map(async (m) => {
-          try {
-            const r = await fetch(`${API_BASE}/monitors/${m.id}/analytics`);
-            if (r.ok) analyticsMap[m.id] = await r.json();
-          } catch {
-            // ignore per-monitor analytics errors
-          }
-        })
-      );
-      setAnalytics(analyticsMap);
-      setLastRefresh(new Date());
-      setError(null);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
+  // Slower — 7 seconds per slide
+  useEffect(() => {
+    const t = setInterval(() => {
+      setSlide((s) => (s + 1) % slides.length);
+      setAnimKey((k) => k + 1);
+    }, 7000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
-    fetchAll();
-    const interval = setInterval(fetchAll, 30000);
-    return () => clearInterval(interval);
-  }, [fetchAll]);
+    if (!API_BASE) return;
+    fetch(`${API_BASE}/monitors`)
+      .then((r) => r.json())
+      .then((d) => Array.isArray(d) && setLiveCount(d.length))
+      .catch(() => {});
+  }, []);
 
-  const addMonitor = async () => {
-    if (!formName.trim() || !formUrl.trim()) return;
-    setFormLoading(true);
-    try {
-      const url = formUrl.startsWith("http") ? formUrl : `https://${formUrl}`;
-      const res = await fetch(`${API_BASE}/monitors`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: formName, url }),
-      });
-      if (!res.ok) throw new Error("Failed to add monitor");
-      setFormName("");
-      setFormUrl("");
-      setShowForm(false);
-      await fetchAll();
-    } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : "Error adding monitor");
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
-  const deleteMonitor = async (id: string, name: string) => {
-    if (!confirm(`Delete monitor "${name}"?`)) return;
-    await fetch(`${API_BASE}/monitors/${id}`, { method: "DELETE" });
-    await fetchAll();
-  };
-
-  const upCount = monitors.filter((m) => m.lastStatus === "up").length;
-  const downCount = monitors.filter((m) => m.lastStatus === "down").length;
-  const overallUptime =
-    monitors.length === 0
-      ? null
-      : (
-          monitors.reduce((sum, m) => {
-            const a = analytics[m.id];
-            return sum + (a ? parseFloat(a.uptime) : 0);
-          }, 0) / monitors.length
-        ).toFixed(1);
+  const current = slides[slide];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0d1008", color: "#d4dbb0", fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
-      {/* Header */}
-      <header style={{ borderBottom: "1px solid rgba(74,92,47,0.3)", padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(74,92,47,0.05)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{
-            width: 10, height: 10, borderRadius: "50%",
-            background: downCount > 0 ? "#c0392b" : "#4A5C2F",
-            boxShadow: `0 0 8px ${downCount > 0 ? "#c0392b" : "#4A5C2F"}`
-          }} />
-          <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: "0.06em", color: "#a8b87a" }}>SENTINEL</span>
-          <span style={{ fontSize: 12, color: "#4A5C2F", marginLeft: 4 }}>uptime monitoring</span>
+    <div style={{ minHeight: "100vh", background: "#181b21", color: "#c9d1d9" }}>
+
+      {/* Nav */}
+      <nav style={{
+        position: "sticky", top: 0, zIndex: 50,
+        background: "rgba(20,22,28,0.92)", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid #2a2f38",
+        padding: "0 40px", height: 58,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <ShieldIcon />
+          <span style={{ fontWeight: 700, fontSize: 18, color: "#e6edf3", letterSpacing: "0.01em" }}>Sentinel</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <span style={{ fontSize: 12, color: "#4A5C2F" }}>refreshed {timeAgo(lastRefresh.toISOString())}</span>
-          <button
-            onClick={fetchAll}
-            style={{ background: "rgba(74,92,47,0.2)", border: "1px solid rgba(74,92,47,0.4)", color: "#a8b87a", padding: "6px 14px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {liveCount !== null && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#4a9eff", background: "rgba(74,158,255,0.08)", border: "1px solid rgba(74,158,255,0.2)", padding: "4px 12px", borderRadius: 999 }}>
+              <div style={{ position: "relative", width: 6, height: 6 }}>
+                <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "ping 2s ease-out infinite" }} />
+                <div style={{ position: "relative", width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
+              </div>
+              {liveCount} monitor{liveCount !== 1 ? "s" : ""} active
+            </div>
+          )}
+          <Link href="/dashboard" style={{
+            background: "#4a9eff", color: "#fff",
+            padding: "7px 18px", borderRadius: 7,
+            fontSize: 13, fontWeight: 600, textDecoration: "none",
+            letterSpacing: "0.01em",
+            boxShadow: "0 2px 12px rgba(74,158,255,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
+          }}>
+            Dashboard
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section style={{
+        maxWidth: 1040, margin: "0 auto",
+        padding: "88px 32px 72px",
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center",
+      }}>
+        {/* Left — rotating copy */}
+        <div>
+          <div
+            key={`tag-${animKey}`}
+            className="fade-in"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 7,
+              fontSize: 11, fontWeight: 600, color: "#4a9eff",
+              textTransform: "uppercase", letterSpacing: "0.12em",
+              background: "rgba(74,158,255,0.08)", border: "1px solid rgba(74,158,255,0.2)",
+              padding: "4px 12px", borderRadius: 4, marginBottom: 22,
+            }}
           >
-            Refresh
-          </button>
-        </div>
-      </header>
-
-      <main style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
-
-        {error && (
-          <div style={{ background: "rgba(139,32,32,0.18)", border: "1px solid rgba(192,57,43,0.4)", borderRadius: 8, padding: "12px 16px", marginBottom: 24, color: "#e8a0a0", fontSize: 14 }}>
-            <strong>Error:</strong> {error} — check that <code style={{ background: "rgba(0,0,0,0.3)", padding: "1px 5px", borderRadius: 3 }}>NEXT_PUBLIC_API_URL</code> is set.
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#4a9eff" }} />
+            {current.tag}
           </div>
-        )}
 
-        {/* Stats row */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16, marginBottom: 32 }}>
+          <h1
+            key={`h-${animKey}`}
+            className="fade-up"
+            style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.12, letterSpacing: "-0.03em", color: "#e6edf3", marginBottom: 20 }}
+          >
+            {current.heading}
+          </h1>
+
+          <p
+            key={`p-${animKey}`}
+            className="fade-up"
+            style={{ fontSize: 16, color: "#6e7681", lineHeight: 1.8, marginBottom: 40, animationDelay: "0.08s" }}
+          >
+            {current.body}
+          </p>
+
+          <div style={{ display: "flex", gap: 10, marginBottom: 36 }}>
+            <Link href="/dashboard" style={{
+              background: "#4a9eff", color: "#fff",
+              padding: "11px 26px", borderRadius: 7,
+              fontSize: 14, fontWeight: 600, textDecoration: "none",
+              boxShadow: "0 4px 18px rgba(74,158,255,0.28)",
+            }}>
+              Open Dashboard
+            </Link>
+            <a
+              href="https://github.com/denzelchingodza/sentinel"
+              target="_blank" rel="noopener noreferrer"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+                color: "#8b949e",
+                border: "1px solid rgba(255,255,255,0.08)",
+                padding: "11px 26px", borderRadius: 7,
+                fontSize: 14, fontWeight: 500, textDecoration: "none",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+              }}
+            >
+              View Source
+            </a>
+          </div>
+
+          {/* Progress bar + dots */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => { setSlide(i); setAnimKey((k) => k + 1); }}
+                style={{
+                  width: i === slide ? 28 : 6, height: 6,
+                  borderRadius: 3,
+                  background: i === slide ? "#4a9eff" : "#2a2f38",
+                  border: "none", cursor: "pointer",
+                  transition: "all 0.35s ease", padding: 0,
+                }}
+              />
+            ))}
+            <span style={{ fontSize: 11, color: "#3d4450", marginLeft: 4 }}>
+              {slide + 1} / {slides.length}
+            </span>
+          </div>
+        </div>
+
+        {/* Right — live panel */}
+        <div style={{
+          background: "rgba(30,34,40,0.7)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 14,
+          overflow: "hidden",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)",
+        }}>
+          {/* Panel chrome */}
+          <div style={{
+            background: "rgba(14,16,22,0.8)",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            padding: "11px 16px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <ShieldIcon />
+              <span style={{ fontSize: 12, color: "#6e7681", fontWeight: 500, letterSpacing: "0.02em" }}>sentinel / monitors</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px #22c55e88" }} />
+              <span style={{ fontSize: 11, color: "#22c55e" }}>live</span>
+            </div>
+          </div>
+
+          {/* Rows */}
+          <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+            {[
+              { name: "DocuZen API", url: "api.docuzen.io", uptime: "99.8%", ms: "142ms", status: "up" },
+              { name: "Platform Site", url: "denzel.netlify.app", uptime: "100%", ms: "98ms", status: "up" },
+              { name: "Auth Service", url: "auth.internal", uptime: "99.2%", ms: "231ms", status: "up" },
+            ].map((m) => (
+              <div key={m.name} style={{
+                background: "rgba(255,255,255,0.03)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: 8, padding: "11px 14px",
+                display: "flex", alignItems: "center", gap: 12,
+              }}>
+                <div style={{ position: "relative", width: 8, height: 8, flexShrink: 0 }}>
+                  <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "ping 2.5s ease-out infinite" }} />
+                  <div style={{ position: "relative", width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#e6edf3" }}>{m.name}</div>
+                  <div style={{ fontSize: 11, color: "#3d4450" }}>{m.url}</div>
+                </div>
+                <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 600 }}>{m.uptime}</span>
+                <span style={{ fontSize: 12, color: "#4d5562" }}>{m.ms}</span>
+              </div>
+            ))}
+
+            {/* Status footer */}
+            <div style={{
+              marginTop: 2, padding: "9px 14px",
+              background: "rgba(34,197,94,0.06)",
+              border: "1px solid rgba(34,197,94,0.18)",
+              borderRadius: 7,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+            }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
+              <span style={{ fontSize: 12, color: "#22c55e" }}>All systems operational</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ height: 1, background: "linear-gradient(to right, transparent, #2a2f38, transparent)" }} />
+      </div>
+
+      {/* How it works */}
+      <section style={{ maxWidth: 1040, margin: "0 auto", padding: "72px 32px" }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.14em", textAlign: "center", marginBottom: 40 }}>
+          How it works
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
           {[
-            { label: "Total Monitors", value: monitors.length, color: undefined },
-            { label: "Online", value: upCount, color: "#4A5C2F" },
-            { label: "Down", value: downCount, color: downCount > 0 ? "#c0392b" : undefined },
-            { label: "Avg Uptime", value: overallUptime !== null ? `${overallUptime}%` : "—", color: undefined },
-            { label: "Active Incidents", value: incidents.length, color: incidents.length > 0 ? "#c0392b" : undefined },
-          ].map((s) => (
-            <div key={s.label} style={{ background: "rgba(74,92,47,0.08)", border: "1px solid rgba(74,92,47,0.18)", borderRadius: 10, padding: "18px 20px" }}>
-              <div style={{ fontSize: 11, color: "#4A5C2F", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: s.color || "#a8b87a" }}>{loading ? "—" : s.value}</div>
+            { step: "01", title: "Add a URL", body: "Register any HTTP endpoint from the dashboard." },
+            { step: "02", title: "Lambda checks it", body: "EventBridge triggers a health check every 60 seconds." },
+            { step: "03", title: "Results stored", body: "Status, response time, and errors saved to DynamoDB." },
+            { step: "04", title: "Alert on change", body: "SES fires an email on down and again on recovery." },
+          ].map((s, i) => (
+            <div key={s.step} style={{
+              background: "rgba(255,255,255,0.03)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+              padding: "28px 24px",
+            }}>
+              <div style={{ fontSize: 11, color: "#4a9eff", fontWeight: 700, letterSpacing: "0.1em", marginBottom: 16 }}>{s.step}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#e6edf3", marginBottom: 8 }}>{s.title}</div>
+              <div style={{ fontSize: 13, color: "#4d5562", lineHeight: 1.65 }}>{s.body}</div>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* Active incidents banner */}
-        {incidents.length > 0 && (
-          <div style={{ background: "rgba(139,32,32,0.1)", border: "1px solid rgba(192,57,43,0.3)", borderRadius: 10, padding: "16px 20px", marginBottom: 28 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#e8a0a0", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>Active Incidents</div>
-            {incidents.map((inc) => {
-              const mon = monitors.find((m) => m.id === inc.monitorId);
-              return (
-                <div key={inc.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderTop: "1px solid rgba(192,57,43,0.15)" }}>
-                  <span style={{ color: "#d4b0b0", fontSize: 14 }}>{mon?.name || inc.url}</span>
-                  <span style={{ fontSize: 12, color: "#b08080" }}>down since {timeAgo(inc.startTime)}</span>
-                </div>
-              );
-            })}
+      {/* About */}
+      <section style={{ borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "#14161c", padding: "60px 32px" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+        <div style={{
+          display: "flex", gap: 32, alignItems: "center", flexWrap: "wrap",
+          background: "rgba(255,255,255,0.03)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 16,
+          padding: "32px 36px",
+          boxShadow: "0 4px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: "50%",
+            background: "rgba(74,158,255,0.1)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            border: "1px solid rgba(74,158,255,0.25)",
+            boxShadow: "0 0 20px rgba(74,158,255,0.12), inset 0 1px 0 rgba(255,255,255,0.08)",
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: "#4a9eff" }}>D</span>
           </div>
-        )}
-
-        {/* Monitors section header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h2 style={{ fontSize: 13, fontWeight: 600, color: "#a8b87a", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Monitors</h2>
-          <button
-            onClick={() => setShowForm((v) => !v)}
-            style={{ background: "#4A5C2F", border: "none", color: "#d4dbb0", padding: "8px 18px", borderRadius: 7, cursor: "pointer", fontSize: 13, fontWeight: 600 }}
-          >
-            {showForm ? "Cancel" : "+ Add Monitor"}
-          </button>
-        </div>
-
-        {/* Add monitor form */}
-        {showForm && (
-          <div style={{ background: "rgba(74,92,47,0.09)", border: "1px solid rgba(74,92,47,0.3)", borderRadius: 10, padding: "20px 24px", marginBottom: 20 }}>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
-              <div style={{ flex: 1, minWidth: 160 }}>
-                <label style={{ fontSize: 12, color: "#4A5C2F", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Name</label>
-                <input
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="My Website"
-                  style={{ width: "100%", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(74,92,47,0.4)", borderRadius: 6, color: "#d4dbb0", padding: "9px 12px", fontSize: 14, outline: "none", boxSizing: "border-box" }}
-                />
-              </div>
-              <div style={{ flex: 2, minWidth: 220 }}>
-                <label style={{ fontSize: 12, color: "#4A5C2F", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>URL</label>
-                <input
-                  value={formUrl}
-                  onChange={(e) => setFormUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  onKeyDown={(e) => e.key === "Enter" && addMonitor()}
-                  style={{ width: "100%", background: "rgba(0,0,0,0.35)", border: "1px solid rgba(74,92,47,0.4)", borderRadius: 6, color: "#d4dbb0", padding: "9px 12px", fontSize: 14, outline: "none", boxSizing: "border-box" }}
-                />
-              </div>
-              <button
-                onClick={addMonitor}
-                disabled={formLoading}
-                style={{ background: "#4A5C2F", border: "none", color: "#d4dbb0", padding: "9px 24px", borderRadius: 7, cursor: formLoading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, opacity: formLoading ? 0.6 : 1 }}
-              >
-                {formLoading ? "Adding..." : "Add"}
-              </button>
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Built by</div>
+            <div style={{ fontSize: 19, fontWeight: 700, color: "#e6edf3", marginBottom: 8 }}>Denzel Chingodza</div>
+            <p style={{ fontSize: 13, color: "#4d5562", lineHeight: 1.75, marginBottom: 16 }}>
+              Software Engineering student and developer based in South Africa, building real projects to explore cloud infrastructure, serverless architecture, and full-stack development.
+            </p>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[
+                { label: "GitHub", href: "https://github.com/denzelchingodza" },
+                { label: "Portfolio", href: "https://denzelchingodza.netlify.app" },
+              ].map((l) => (
+                <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer"
+                  style={{
+                    fontSize: 12, color: "#8b949e",
+                    background: "rgba(255,255,255,0.04)",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    padding: "5px 14px", borderRadius: 6,
+                    textDecoration: "none", fontWeight: 500,
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+                  }}>
+                  {l.label}
+                </a>
+              ))}
             </div>
           </div>
-        )}
-
-        {/* Monitor list */}
-        {loading ? (
-          <div style={{ textAlign: "center", color: "#4A5C2F", padding: "60px 0", fontSize: 14 }}>Loading monitors...</div>
-        ) : monitors.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#4A5C2F", padding: "60px 0", border: "1px dashed rgba(74,92,47,0.25)", borderRadius: 10, fontSize: 14 }}>
-            No monitors yet. Add a URL above to start monitoring.
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {monitors.map((m) => {
-              const a = analytics[m.id];
-              return (
-                <div
-                  key={m.id}
-                  style={{
-                    background: "rgba(74,92,47,0.05)",
-                    border: `1px solid ${m.lastStatus === "down" ? "rgba(192,57,43,0.35)" : "rgba(74,92,47,0.18)"}`,
-                    borderRadius: 10,
-                    padding: "16px 20px",
-                    display: "grid",
-                    gridTemplateColumns: "12px 1fr auto auto auto auto",
-                    alignItems: "center",
-                    gap: "0 18px",
-                  }}
-                >
-                  {/* Status dot */}
-                  <div style={{
-                    width: 10, height: 10, borderRadius: "50%",
-                    background: statusColor(m.lastStatus),
-                    boxShadow: `0 0 6px ${statusColor(m.lastStatus)}`,
-                  }} />
-
-                  {/* Name + URL */}
-                  <div style={{ overflow: "hidden" }}>
-                    <div style={{ fontWeight: 600, color: "#c8d898", marginBottom: 2, fontSize: 15 }}>{m.name}</div>
-                    <div style={{ fontSize: 12, color: "#4A5C2F", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
-                  </div>
-
-                  {/* Status badge */}
-                  <div style={{
-                    background: statusBg(m.lastStatus),
-                    color: statusColor(m.lastStatus),
-                    border: `1px solid ${statusColor(m.lastStatus)}`,
-                    padding: "3px 10px", borderRadius: 20,
-                    fontSize: 11, fontWeight: 700,
-                    textTransform: "uppercase", letterSpacing: "0.06em",
-                  }}>
-                    {m.lastStatus}
-                  </div>
-
-                  {/* Uptime */}
-                  <div style={{ textAlign: "right", minWidth: 72 }}>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: "#a8b87a" }}>{a ? `${a.uptime}%` : "—"}</div>
-                    <div style={{ fontSize: 11, color: "#4A5C2F" }}>uptime</div>
-                  </div>
-
-                  {/* Response time */}
-                  <div style={{ textAlign: "right", minWidth: 76 }}>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: "#a8b87a" }}>
-                      {m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}
-                    </div>
-                    <div style={{ fontSize: 11, color: "#4A5C2F" }}>response</div>
-                  </div>
-
-                  {/* Last checked + delete */}
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 11, color: "#4A5C2F", marginBottom: 6 }}>{timeAgo(m.lastChecked)}</div>
-                    <button
-                      onClick={() => deleteMonitor(m.id, m.name)}
-                      style={{ background: "transparent", border: "1px solid rgba(192,57,43,0.3)", color: "#8B4444", padding: "3px 10px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div style={{ marginTop: 48, textAlign: "center", fontSize: 12, color: "#2a3515" }}>
-          Sentinel — serverless uptime monitoring on AWS · checks every 60s · alerts via SES
         </div>
-      </main>
+        </div>
+      </section>
+
+      <footer style={{ padding: "24px 32px", textAlign: "center", fontSize: 12, color: "#2a2f38" }}>
+        Sentinel · serverless uptime monitoring · AWS free tier
+      </footer>
     </div>
   );
 }
