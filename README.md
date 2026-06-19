@@ -1,6 +1,6 @@
 # Sentinel
 
-I built a few projects over the past while a document analysis tool, a personal portfolio, a couple of APIs. At some point I just wanted to open one page and see if everything was still running. Not dig through Netlify, not check Render, not wait for a user to tell me something was broken. Just one place, always watching.
+I built a few projects over the past while a document analysis tool, a personal portfolio, a demo e-commerce web app. At some point I just wanted to open one page and see if everything was still running. Not dig through Netlify, not check Render, not wait for a user to tell me something was broken. Just one place, always watching.
 
 That curiosity turned into Sentinel.
 
