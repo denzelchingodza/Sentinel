@@ -1,0 +1,19 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+# Lambda zips
+lambda/zips/
+
+# Node
+node_modules/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
