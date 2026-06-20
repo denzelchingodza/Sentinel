@@ -1,5 +1,7 @@
 # Sentinel
 
+**Live:** [sentinel-kappa-wine.vercel.app](https://sentinel-kappa-wine.vercel.app)
+
 I built a few projects over the past while a document analysis tool, a personal portfolio, a demo e-commerce web app. At some point I just wanted to open one page and see if everything was still running. Not dig through Netlify, not check Render, not wait for a user to tell me something was broken. Just one place, always watching.
 
 That curiosity turned into Sentinel.
@@ -47,7 +49,7 @@ All the infrastructure is defined in Terraform — which means the entire backen
 | Database | AWS DynamoDB |
 | Email alerts | AWS SES |
 | REST API | AWS API Gateway + Lambda |
-| Frontend | Next.js, deployed on Netlify |
+| Frontend | Next.js, deployed on Vercel |
 | Infrastructure | Terraform |
 
 Everything runs on the AWS free tier. Monthly cost: $0.
