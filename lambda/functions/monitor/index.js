@@ -31,9 +31,8 @@ function ping(url) {
 
 // ── Send alert email ──────────────────────────────────────────────────────────
 async function sendAlert(monitor, type, details) {
-  const isDown     = type === "down";
-  const isRecovery = type === "recovery";
-  const subject    = isDown
+  const isDown    = type === "down";
+  const subject   = isDown
     ? `🚨 Sentinel Alert: ${monitor.name} is DOWN`
     : `✅ Sentinel Recovery: ${monitor.name} is back UP`;
 
@@ -41,9 +40,12 @@ async function sendAlert(monitor, type, details) {
     ? `Your monitored endpoint is experiencing issues.\n\nMonitor: ${monitor.name}\nURL: ${monitor.url}\nStatus Code: ${details.statusCode || "No response"}\nResponse Time: ${details.responseTime}ms\nError: ${details.error || "N/A"}\nTime: ${new Date().toISOString()}\n\nSentinel will notify you again when it recovers.`
     : `Your monitored endpoint has recovered.\n\nMonitor: ${monitor.name}\nURL: ${monitor.url}\nStatus Code: ${details.statusCode}\nResponse Time: ${details.responseTime}ms\nDowntime Duration: ${details.duration || "Unknown"}\nRecovered At: ${new Date().toISOString()}`;
 
+  // Send to the monitor owner's email if available, fallback to admin email
+  const toAddress = monitor.alertEmail || ALERT_EMAIL;
+
   await ses.send(new SendEmailCommand({
     Source: ALERT_EMAIL,
-    Destination: { ToAddresses: [ALERT_EMAIL] },
+    Destination: { ToAddresses: [toAddress] },
     Message: {
       Subject: { Data: subject },
       Body: { Text: { Data: body } },
@@ -89,8 +91,8 @@ exports.handler = async () => {
       }));
 
       if (incidents.length === 0) {
-        // Create new incident
-        const incident = { id: randomUUID(), monitorId: monitor.id, url: monitor.url, startTime: timestamp, resolved: false, alertSent: true, lastAlertTime: timestamp, statusCode, responseTime, error: error || null };
+        // Create new incident — propagate userId so the API can filter by owner
+        const incident = { id: randomUUID(), monitorId: monitor.id, userId: monitor.userId || null, url: monitor.url, startTime: timestamp, resolved: false, alertSent: true, lastAlertTime: timestamp, statusCode, responseTime, error: error || null };
         await dynamo.send(new PutCommand({ TableName: INCIDENTS_TABLE, Item: incident }));
         await sendAlert(monitor, "down", { statusCode, responseTime, error });
       } else {

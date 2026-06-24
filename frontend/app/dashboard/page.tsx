@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getIdToken, signOut, getSession } from "../../lib/cognito";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -61,80 +63,143 @@ function UptimeBar({ uptime }: { uptime: string }) {
 }
 
 export default function Dashboard() {
-  const [monitors, setMonitors] = useState<Monitor[]>([]);
-  const [analytics, setAnalytics] = useState<Record<string, Analytics>>({});
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
-  const [showForm, setShowForm] = useState(false);
-  const [formName, setFormName] = useState("");
-  const [formUrl, setFormUrl] = useState("");
-  const [formLoading, setFormLoading] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null); // monitor id pending delete
+  const router = useRouter();
+  const [userEmail, setUserEmail]     = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  // Incrementing this triggers a data re-fetch (used after add/delete/manual refresh)
+  const [refreshKey, setRefreshKey]   = useState(0);
 
-  const fetchAll = useCallback(async () => {
-    try {
-      const [monRes, incRes] = await Promise.all([
-        fetch(`${API_BASE}/monitors`),
-        fetch(`${API_BASE}/incidents`),
-      ]);
-      if (!monRes.ok) throw new Error("API unreachable");
-      const mons: Monitor[] = await monRes.json();
-      const incs: Incident[] = incRes.ok ? await incRes.json() : [];
-      setMonitors(mons);
-      setIncidents(incs);
-      const aMap: Record<string, Analytics> = {};
-      await Promise.all(
-        mons.map(async (m) => {
-          try {
-            const r = await fetch(`${API_BASE}/monitors/${m.id}/analytics`);
-            if (r.ok) aMap[m.id] = await r.json();
-          } catch { /* ignore */ }
-        })
-      );
-      setAnalytics(aMap);
-      setLastRefresh(new Date());
-      setError(null);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
+  const [monitors, setMonitors]       = useState<Monitor[]>([]);
+  const [analytics, setAnalytics]     = useState<Record<string, Analytics>>({});
+  const [incidents, setIncidents]     = useState<Incident[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [showForm, setShowForm]       = useState(false);
+  const [formName, setFormName]       = useState("");
+  const [formUrl, setFormUrl]         = useState("");
+  const [formLoading, setFormLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  // ── Auth check ───────────────────────────────────────────────────────────────
+  useEffect(() => {
+    let active = true;
+    getSession().then((session) => {
+      if (!active) return;
+      if (!session) { router.replace("/auth"); return; }
+      const payload = session.getIdToken().decodePayload();
+      setUserEmail((payload.email as string) ?? null);
+      setAuthChecked(true);
+    });
+    return () => { active = false; };
+  }, [router]);
+
+  // ── Authenticated fetch helper ────────────────────────────────────────────────
+  const authFetch = useCallback(async (url: string, opts: RequestInit = {}) => {
+    const tok = await getIdToken();
+    return fetch(url, {
+      ...opts,
+      headers: {
+        "Content-Type": "application/json",
+        ...opts.headers,
+        Authorization: `Bearer ${tok}`,
+      },
+    });
   }, []);
 
+  // Keep a stable ref so the interval callback always sees the latest authFetch
+  const authFetchRef = useRef(authFetch);
+  useEffect(() => { authFetchRef.current = authFetch; }, [authFetch]);
+
+  // ── Data fetching ─────────────────────────────────────────────────────────────
+  // Defining fetchAll inline inside the effect is the React-recommended pattern
+  // for async data loading — it avoids the cascading-render lint error and ensures
+  // all setState calls are batched into a single render at the end.
   useEffect(() => {
+    if (!authChecked) return;
+    let active = true;
+
+    async function fetchAll() {
+      const fetch_ = authFetchRef.current;
+      try {
+        const [monRes, incRes] = await Promise.all([
+          fetch_(`${API_BASE}/monitors`),
+          fetch_(`${API_BASE}/incidents`),
+        ]);
+        if (!active) return;
+        if (monRes.status === 401 || monRes.status === 403) {
+          router.replace("/auth"); return;
+        }
+        if (!monRes.ok) throw new Error("API unreachable");
+        const mons: Monitor[] = await monRes.json();
+        const incs: Incident[] = incRes.ok ? await incRes.json() : [];
+
+        const aMap: Record<string, Analytics> = {};
+        await Promise.all(
+          mons.map(async (m) => {
+            try {
+              const r = await fetch_(`${API_BASE}/monitors/${m.id}/analytics`);
+              if (r.ok) aMap[m.id] = await r.json();
+            } catch { /* ignore */ }
+          })
+        );
+
+        if (!active) return;
+        // Single batch — one render, no flicker
+        setMonitors(mons);
+        setIncidents(incs);
+        setAnalytics(aMap);
+        setLastRefresh(new Date());
+        setError(null);
+      } catch (e: unknown) {
+        if (active) setError(e instanceof Error ? e.message : "Unknown error");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
     fetchAll();
     const t = setInterval(fetchAll, 30000);
-    return () => clearInterval(t);
-  }, [fetchAll]);
+    return () => { active = false; clearInterval(t); };
+  }, [authChecked, refreshKey, router]);
+
+  const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   const addMonitor = async () => {
     if (!formName.trim() || !formUrl.trim()) return;
     setFormLoading(true);
     try {
       const url = formUrl.startsWith("http") ? formUrl : `https://${formUrl}`;
-      await fetch(`${API_BASE}/monitors`, {
+      await authFetch(`${API_BASE}/monitors`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: formName, url }),
       });
       setFormName(""); setFormUrl(""); setShowForm(false);
-      await fetchAll();
+      refresh();
     } catch { alert("Failed to add monitor"); }
     finally { setFormLoading(false); }
   };
 
   const deleteMonitor = async (id: string) => {
-    await fetch(`${API_BASE}/monitors/${id}`, { method: "DELETE" });
+    await authFetch(`${API_BASE}/monitors/${id}`, { method: "DELETE" });
     setConfirmDelete(null);
-    await fetchAll();
+    refresh();
   };
 
-  const upCount = monitors.filter((m) => m.lastStatus === "up").length;
-  const downCount = monitors.filter((m) => m.lastStatus === "down").length;
-  const allUp = !loading && monitors.length > 0 && downCount === 0;
-  const avgUptime = monitors.length === 0 ? null :
+  const handleSignOut = () => {
+    signOut();
+    router.replace("/auth");
+  };
+
+  // Stay blank until BOTH auth is confirmed AND the first data load is complete.
+  // This means the dashboard renders exactly once — fully populated — with no flicker.
+  if (!authChecked || loading) {
+    return <div style={{ minHeight: "100vh", background: "#181b21" }} />;
+  }
+
+  const upCount    = monitors.filter((m) => m.lastStatus === "up").length;
+  const downCount  = monitors.filter((m) => m.lastStatus === "down").length;
+  const avgUptime  = monitors.length === 0 ? null :
     (monitors.reduce((s, m) => s + (analytics[m.id] ? parseFloat(analytics[m.id].uptime) : 100), 0) / monitors.length).toFixed(1);
   const respondingMonitors = monitors.filter(m => m.lastResponseTime);
   const avgMs = respondingMonitors.length > 0
@@ -155,8 +220,11 @@ export default function Dashboard() {
           <span style={{ fontSize: 13, color: "#3d4450" }}>Dashboard</span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {userEmail && (
+            <span style={{ fontSize: 12, color: "#4d5562", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</span>
+          )}
           <span style={{ fontSize: 12, color: "#3d4450" }}>{timeAgo(lastRefresh.toISOString())}</span>
-          <button onClick={fetchAll}
+          <button onClick={refresh}
             style={{ background: "#1e2228", border: "1px solid #2a2f38", color: "#6e7681", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
             Refresh
           </button>
@@ -164,19 +232,22 @@ export default function Dashboard() {
             style={{ background: showForm ? "#1e2228" : "#4a9eff", border: showForm ? "1px solid #2a2f38" : "none", color: showForm ? "#6e7681" : "#fff", padding: "5px 14px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
             {showForm ? "Cancel" : "+ Monitor"}
           </button>
+          <button onClick={handleSignOut}
+            style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
+            Sign out
+          </button>
         </div>
       </nav>
 
       <main style={{ maxWidth: 960, margin: "0 auto", padding: "24px" }}>
 
-        {/* Error */}
         {error && (
           <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#f87171", fontSize: 13 }}>
             {error}
           </div>
         )}
 
-        {/* Incidents — only show if the monitor still exists */}
+        {/* Incidents */}
         {incidents.filter(inc => monitors.some(m => m.id === inc.monitorId)).length > 0 && (
           <div style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.22)", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -221,9 +292,9 @@ export default function Dashboard() {
         {/* Stat cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
           {[
-            { label: "Total", value: loading ? "—" : monitors.length, color: undefined },
-            { label: "Online", value: loading ? "—" : upCount, color: upCount > 0 && !loading ? "#22c55e" : undefined },
-            { label: "Down", value: loading ? "—" : downCount, color: downCount > 0 ? "#ef4444" : undefined },
+            { label: "Total",        value: loading ? "—" : monitors.length,            color: undefined },
+            { label: "Online",       value: loading ? "—" : upCount,                    color: upCount > 0 && !loading ? "#22c55e" : undefined },
+            { label: "Down",         value: loading ? "—" : downCount,                  color: downCount > 0 ? "#ef4444" : undefined },
             { label: "Avg response", value: loading ? "—" : avgMs ? `${avgMs}ms` : "—", color: undefined },
           ].map((c) => (
             <div key={c.label} style={{ background: "#1e2228", border: "1px solid #2a2f38", borderRadius: 10, padding: "16px 18px" }}>
@@ -251,10 +322,10 @@ export default function Dashboard() {
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {monitors.map((m) => {
                 const a = analytics[m.id];
-                const isUp = m.lastStatus === "up";
+                const isUp   = m.lastStatus === "up";
                 const isDown = m.lastStatus === "down";
                 const msColor = !m.lastResponseTime ? "#4d5562"
-                  : m.lastResponseTime < 500 ? "#22c55e"
+                  : m.lastResponseTime < 500  ? "#22c55e"
                   : m.lastResponseTime < 2000 ? "#f59e0b"
                   : "#ef4444";
 

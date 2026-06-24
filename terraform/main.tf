@@ -12,6 +12,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+module "cognito" {
+  source = "./modules/cognito"
+}
+
 module "dynamodb" {
   source = "./modules/dynamodb"
 }
@@ -40,9 +44,10 @@ module "eventbridge" {
 }
 
 module "api_gateway" {
-  source          = "./modules/api_gateway"
-  api_lambda_arn  = module.lambda.api_lambda_arn
-  api_lambda_name = module.lambda.api_lambda_name
-  aws_region      = var.aws_region
-  aws_account_id  = var.aws_account_id
+  source                = "./modules/api_gateway"
+  api_lambda_arn        = module.lambda.api_lambda_arn
+  api_lambda_name       = module.lambda.api_lambda_name
+  aws_region            = var.aws_region
+  aws_account_id        = var.aws_account_id
+  cognito_user_pool_arn = module.cognito.user_pool_arn
 }

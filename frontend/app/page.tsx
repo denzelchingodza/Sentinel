@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-
 const slides = [
   {
     tag: "Real time detection",
@@ -52,8 +50,6 @@ function ShieldIcon() {
 export default function Home() {
   const [slide, setSlide] = useState(0);
   const [animKey, setAnimKey] = useState(0);
-  const [liveCount, setLiveCount] = useState<number | null>(null);
-
   // Slower — 7 seconds per slide
   useEffect(() => {
     const t = setInterval(() => {
@@ -61,14 +57,6 @@ export default function Home() {
       setAnimKey((k) => k + 1);
     }, 7000);
     return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    if (!API_BASE) return;
-    fetch(`${API_BASE}/monitors`)
-      .then((r) => r.json())
-      .then((d) => Array.isArray(d) && setLiveCount(d.length))
-      .catch(() => {});
   }, []);
 
   const current = slides[slide];
@@ -89,23 +77,14 @@ export default function Home() {
           <span style={{ fontWeight: 700, fontSize: 18, color: "#e6edf3", letterSpacing: "0.01em" }}>Sentinel</span>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {liveCount !== null && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#4a9eff", background: "rgba(74,158,255,0.08)", border: "1px solid rgba(74,158,255,0.2)", padding: "4px 12px", borderRadius: 999 }}>
-              <div style={{ position: "relative", width: 6, height: 6 }}>
-                <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "ping 2s ease-out infinite" }} />
-                <div style={{ position: "relative", width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
-              </div>
-              {liveCount} monitor{liveCount !== 1 ? "s" : ""} active
-            </div>
-          )}
-          <Link href="/dashboard" style={{
+          <Link href="/auth" style={{
             background: "#4a9eff", color: "#fff",
             padding: "7px 18px", borderRadius: 7,
             fontSize: 13, fontWeight: 600, textDecoration: "none",
             letterSpacing: "0.01em",
             boxShadow: "0 2px 12px rgba(74,158,255,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
           }}>
-            Dashboard
+            Sign in
           </Link>
         </div>
       </nav>
@@ -150,21 +129,19 @@ export default function Home() {
           </p>
 
           <div style={{ display: "flex", gap: 10, marginBottom: 36 }}>
-            <Link href="/dashboard" style={{
+            <Link href="/auth" style={{
               background: "#4a9eff", color: "#fff",
               padding: "11px 26px", borderRadius: 7,
               fontSize: 14, fontWeight: 600, textDecoration: "none",
               boxShadow: "0 4px 18px rgba(74,158,255,0.28)",
             }}>
-              Open Dashboard
+              Get started
             </Link>
             <a
               href="https://github.com/denzelchingodza/sentinel"
               target="_blank" rel="noopener noreferrer"
               style={{
                 background: "rgba(255,255,255,0.04)",
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
                 color: "#8b949e",
                 border: "1px solid rgba(255,255,255,0.08)",
                 padding: "11px 26px", borderRadius: 7,
@@ -232,9 +209,7 @@ export default function Home() {
               { name: "Auth Service", url: "auth.internal", uptime: "99.2%", ms: "231ms", status: "up" },
             ].map((m) => (
               <div key={m.name} style={{
-                background: "rgba(255,255,255,0.03)",
-                backdropFilter: "blur(8px)",
-                WebkitBackdropFilter: "blur(8px)",
+                background: "rgba(255,255,255,0.04)",
                 border: "1px solid rgba(255,255,255,0.06)",
                 borderRadius: 8, padding: "11px 14px",
                 display: "flex", alignItems: "center", gap: 12,
@@ -286,10 +261,7 @@ export default function Home() {
           ].map((s, i) => (
             <div key={s.step} style={{
               background: "rgba(255,255,255,0.03)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
               borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
               padding: "28px 24px",
             }}>
               <div style={{ fontSize: 11, color: "#4a9eff", fontWeight: 700, letterSpacing: "0.1em", marginBottom: 16 }}>{s.step}</div>
@@ -306,20 +278,16 @@ export default function Home() {
         <div style={{
           display: "flex", gap: 32, alignItems: "center", flexWrap: "wrap",
           background: "rgba(255,255,255,0.03)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
           border: "1px solid rgba(255,255,255,0.07)",
           borderRadius: 16,
           padding: "32px 36px",
-          boxShadow: "0 4px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+          boxShadow: "0 4px 32px rgba(0,0,0,0.3)",
         }}>
           <div style={{
             width: 64, height: 64, borderRadius: "50%",
             background: "rgba(74,158,255,0.1)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
             border: "1px solid rgba(74,158,255,0.25)",
-            boxShadow: "0 0 20px rgba(74,158,255,0.12), inset 0 1px 0 rgba(255,255,255,0.08)",
+            boxShadow: "0 0 20px rgba(74,158,255,0.12)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
             <span style={{ fontSize: 22, fontWeight: 800, color: "#4a9eff" }}>D</span>
@@ -333,14 +301,12 @@ export default function Home() {
             <div style={{ display: "flex", gap: 8 }}>
               {[
                 { label: "GitHub", href: "https://github.com/denzelchingodza" },
-                { label: "Portfolio", href: "https://denzelchingodza.netlify.app" },
+                { label: "Portfolio", href: "https://platform-nine-ochre.vercel.app" },
               ].map((l) => (
                 <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer"
                   style={{
                     fontSize: 12, color: "#8b949e",
                     background: "rgba(255,255,255,0.04)",
-                    backdropFilter: "blur(8px)",
-                    WebkitBackdropFilter: "blur(8px)",
                     border: "1px solid rgba(255,255,255,0.08)",
                     padding: "5px 14px", borderRadius: 6,
                     textDecoration: "none", fontWeight: 500,

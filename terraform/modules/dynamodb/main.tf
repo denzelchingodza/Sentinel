@@ -8,6 +8,17 @@ resource "aws_dynamodb_table" "monitors" {
     type = "S"
   }
 
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "userId-index"
+    hash_key        = "userId"
+    projection_type = "ALL"
+  }
+
   tags = { Project = "sentinel" }
 }
 
@@ -57,9 +68,20 @@ resource "aws_dynamodb_table" "incidents" {
     type = "S"
   }
 
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "monitorId-index"
     hash_key        = "monitorId"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "userId-index"
+    hash_key        = "userId"
     projection_type = "ALL"
   }
 

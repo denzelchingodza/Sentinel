@@ -66,6 +66,7 @@ Everything runs on the AWS free tier. Monthly cost: $0.
 - Incident log with start time, duration, and status code
 - Response time colour-coded by speed (green under 500ms, amber under 2s, red above)
 - Add and remove monitors from the dashboard without touching code
+- Auth check uses a single Cognito session call — token and email extracted in one round trip
 
 ---
 
