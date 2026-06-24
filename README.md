@@ -18,6 +18,24 @@ It's nothing you couldn't piece together from paid tools. But building it myself
 
 ---
 
+## Getting started
+
+Visit [sentinel-kappa-wine.vercel.app](https://sentinel-kappa-wine.vercel.app) and create an account. Sign up with your email, verify it with the code sent to your inbox, and you're in. Each account is fully isolated — you only ever see your own monitors, and alert emails go to the address you signed up with.
+
+Once you're on the dashboard, paste in any URL and give it a name. Sentinel starts checking it immediately.
+
+---
+
+## Why I added authentication
+
+The first version had no auth. Every monitor was visible to anyone who opened the app, and alert emails went to a single hardcoded address. That was fine for a prototype but completely wrong for something real.
+
+Adding auth meant rethinking several layers at once. A Cognito User Pool handles sign up, email verification, password resets, and token management. API Gateway validates the JWT on every request before it reaches the Lambda, so unauthenticated calls are rejected before any business logic runs. DynamoDB got a `userId` GSI on both the monitors and incidents tables so queries can be scoped per user. The Lambda reads the `sub` claim from the verified token and uses it as the partition key — meaning no user can read, write, or delete another user's data even if they know the IDs.
+
+On the frontend, the Cognito SDK handles the auth flow. The JWT is attached as a Bearer token on every API call, and the session is refreshed automatically so users don't get logged out unexpectedly.
+
+---
+
 ## Why I built it
 
 Partly practical I have live projects and I want to know they're healthy without manually checking.
@@ -49,6 +67,7 @@ All the infrastructure is defined in Terraform — which means the entire backen
 | Database | AWS DynamoDB |
 | Email alerts | AWS SES |
 | REST API | AWS API Gateway + Lambda |
+| Auth | AWS Cognito (User Pool + JWT authorizer) |
 | Frontend | Next.js, deployed on Vercel |
 | Infrastructure | Terraform |
 
@@ -92,11 +111,21 @@ terraform apply
 # Run the frontend
 cd ../frontend
 npm install
-# set NEXT_PUBLIC_API_URL in .env.local to the api_gateway_url from terraform output
+cp .env.local.example .env.local  # fill in the values from terraform output
 npm run dev
 ```
 
+Terraform outputs the values you need for `.env.local`:
+
+```
+NEXT_PUBLIC_API_URL                 # api_gateway_url from terraform output
+NEXT_PUBLIC_COGNITO_USER_POOL_ID    # cognito_user_pool_id from terraform output
+NEXT_PUBLIC_COGNITO_CLIENT_ID       # cognito_client_id from terraform output
+```
+
 After deploying, AWS will send a verification email to the address in your `terraform.tfvars`. Click the link — SES won't send alerts until the address is verified.
+
+If deploying to Vercel, add those same three environment variables in your Vercel project settings and redeploy.
 
 ---
 
@@ -104,7 +133,7 @@ After deploying, AWS will send a verification email to the address in your `terr
 
 Before this project I had never written a line of Terraform, never set up an EventBridge rule, never touched SES. I knew Lambda existed but hadn't used it for anything real.
 
-Working through this — figuring out IAM permissions, understanding why asyncpg doesn't accept `sslmode` as a connection arg, learning that `terraform plan` is basically your best friend — was the kind of learning that actually sticks.
+Working through this — figuring out IAM permissions, wiring up a Cognito JWT authorizer in API Gateway, designing DynamoDB GSIs for per-user queries, learning that `terraform plan` is basically your best friend — was the kind of learning that actually sticks.
 
 The project is simple by industry standards. But it's real infrastructure, deployed to a real cloud, doing a real job. That matters to me.
 

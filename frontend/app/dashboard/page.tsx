@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -128,6 +128,7 @@ export default function Dashboard() {
         ]);
         if (!active) return;
         if (monRes.status === 401 || monRes.status === 403) {
+          signOut();
           router.replace("/auth"); return;
         }
         if (!monRes.ok) throw new Error("API unreachable");
