@@ -28,7 +28,7 @@ export default function Home() {
     <div style={{ minHeight: "100vh", background: "#0f1117", color: "#e6edf3", display: "flex", flexDirection: "column" }}>
 
       {/* Nav */}
-      <nav style={{ display: "flex", alignItems: "center", padding: "18px 40px", borderBottom: "1px solid #1e2330" }}>
+      <nav className="nav-pad" style={{ display: "flex", alignItems: "center", padding: "18px 40px", borderBottom: "1px solid #1e2330" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 600, letterSpacing: "-0.2px", color: "#e6edf3" }}>
           <ShieldIcon />
           Sentinel
@@ -36,12 +36,12 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", padding: "80px 40px 64px" }}>
+      <section className="hero-padding" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", padding: "80px 40px 64px" }}>
         <p style={{ fontSize: 11, color: "#4d5562", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 24 }}>
           Uptime monitoring
         </p>
 
-        <h1 style={{ fontSize: "clamp(28px, 5vw, 38px)", fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.8px", color: "#e6edf3", marginBottom: 16, maxWidth: 460 }}>
+        <h1 className="hero-title" style={{ fontSize: "clamp(28px, 5vw, 38px)", fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.8px", color: "#e6edf3", marginBottom: 16, maxWidth: 460 }}>
           Know when your sites go down.
         </h1>
 
@@ -60,7 +60,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer style={{ padding: "20px 40px", borderTop: "1px solid #1e2330", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <footer className="footer-pad" style={{ padding: "20px 40px", borderTop: "1px solid #1e2330", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: 11, color: "#3d4450" }}>Built by Denzel Chingodza</span>
         <a
           href="https://github.com/denzelchingodza/sentinel"

@@ -220,14 +220,14 @@ export default function Dashboard() {
           <div style={{ width: 1, height: 16, background: "#2a2f38" }} />
           <span style={{ fontSize: 13, color: "#3d4450" }}>Dashboard</span>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="nav-actions" style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {userEmail && (
-            <span style={{ fontSize: 12, color: "#4d5562", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</span>
+            <span className="nav-email" style={{ fontSize: 12, color: "#4d5562", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</span>
           )}
-          <span style={{ fontSize: 12, color: "#3d4450" }}>{timeAgo(lastRefresh.toISOString())}</span>
+          <span className="nav-email" style={{ fontSize: 12, color: "#3d4450" }}>{timeAgo(lastRefresh.toISOString())}</span>
           <button onClick={refresh}
             style={{ background: "#1e2228", border: "1px solid #2a2f38", color: "#6e7681", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
-            Refresh
+            ↻
           </button>
           <button onClick={() => setShowForm((v) => !v)}
             style={{ background: showForm ? "#1e2228" : "#4a9eff", border: showForm ? "1px solid #2a2f38" : "none", color: showForm ? "#6e7681" : "#fff", padding: "5px 14px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
@@ -240,7 +240,7 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <main style={{ maxWidth: 960, margin: "0 auto", padding: "24px" }}>
+      <main className="dash-padding" style={{ maxWidth: 960, margin: "0 auto", padding: "24px" }}>
 
         {error && (
           <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#f87171", fontSize: 13 }}>
@@ -291,7 +291,7 @@ export default function Dashboard() {
         )}
 
         {/* Stat cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
+        <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
           {[
             { label: "Total",        value: loading ? "—" : monitors.length,            color: undefined },
             { label: "Online",       value: loading ? "—" : upCount,                    color: upCount > 0 && !loading ? "#22c55e" : undefined },
@@ -314,13 +314,83 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto", alignItems: "center", gap: "0 14px", padding: "6px 16px", marginBottom: 4 }}>
-              {["", "Monitor", "Uptime (24h)", "Response", "Status", "Checked", ""].map((h, i) => (
-                <span key={i} style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", textAlign: i >= 2 ? "right" : "left" }}>{h}</span>
-              ))}
+            {/* Desktop table */}
+            <div className="mon-desktop">
+              <div style={{ display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto", alignItems: "center", gap: "0 14px", padding: "6px 16px", marginBottom: 4 }}>
+                {["", "Monitor", "Uptime (24h)", "Response", "Status", "Checked", ""].map((h, i) => (
+                  <span key={i} style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", textAlign: i >= 2 ? "right" : "left" }}>{h}</span>
+                ))}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {monitors.map((m) => {
+                  const a = analytics[m.id];
+                  const isUp   = m.lastStatus === "up";
+                  const isDown = m.lastStatus === "down";
+                  const msColor = !m.lastResponseTime ? "#4d5562"
+                    : m.lastResponseTime < 500  ? "#22c55e"
+                    : m.lastResponseTime < 2000 ? "#f59e0b"
+                    : "#ef4444";
+                  return (
+                    <div key={m.id} style={{
+                      background: "#1e2228",
+                      border: `1px solid ${isDown ? "rgba(239,68,68,0.3)" : "#2a2f38"}`,
+                      borderRadius: 9, padding: "13px 16px",
+                      display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto",
+                      alignItems: "center", gap: "0 14px",
+                    }}>
+                      <div style={{ position: "relative", width: 9, height: 9 }}>
+                        {isUp && <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "ping 2.5s ease-out infinite" }} />}
+                        <div style={{ position: "relative", width: 9, height: 9, borderRadius: "50%", background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38" }} />
+                      </div>
+                      <div style={{ overflow: "hidden" }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: "#e6edf3", marginBottom: 1 }}>{m.name}</div>
+                        <div style={{ fontSize: 11, color: "#3d4450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                        {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d4450" }}>—</span>}
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: msColor }}>
+                          {m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}
+                        </span>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{
+                          display: "inline-block", padding: "2px 10px", borderRadius: 20,
+                          fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
+                          background: isUp ? "rgba(34,197,94,0.1)" : isDown ? "rgba(239,68,68,0.1)" : "rgba(74,85,98,0.2)",
+                          color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#4d5562",
+                          border: `1px solid ${isUp ? "rgba(34,197,94,0.25)" : isDown ? "rgba(239,68,68,0.25)" : "#2a2f38"}`,
+                        }}>
+                          {m.lastStatus}
+                        </span>
+                      </div>
+                      <div style={{ textAlign: "right", fontSize: 11, color: "#3d4450" }}>{timeAgo(m.lastChecked)}</div>
+                      {confirmDelete === m.id ? (
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <button onClick={() => deleteMonitor(m.id)}
+                            style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", padding: "3px 8px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
+                            Remove
+                          </button>
+                          <button onClick={() => setConfirmDelete(null)}
+                            style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setConfirmDelete(m.id)}
+                          style={{ background: "transparent", border: "1px solid #2a2f38", color: "#3d4450", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {/* Mobile cards */}
+            <div className="mon-mobile" style={{ display: "none", flexDirection: "column", gap: 8 }}>
               {monitors.map((m) => {
                 const a = analytics[m.id];
                 const isUp   = m.lastStatus === "up";
@@ -329,60 +399,57 @@ export default function Dashboard() {
                   : m.lastResponseTime < 500  ? "#22c55e"
                   : m.lastResponseTime < 2000 ? "#f59e0b"
                   : "#ef4444";
-
                 return (
                   <div key={m.id} style={{
                     background: "#1e2228",
                     border: `1px solid ${isDown ? "rgba(239,68,68,0.3)" : "#2a2f38"}`,
-                    borderRadius: 9, padding: "13px 16px",
-                    display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto",
-                    alignItems: "center", gap: "0 14px",
+                    borderRadius: 10, padding: "14px 16px",
                   }}>
-                    <div style={{ position: "relative", width: 9, height: 9 }}>
-                      {isUp && <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "ping 2.5s ease-out infinite" }} />}
-                      <div style={{ position: "relative", width: 9, height: 9, borderRadius: "50%", background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38" }} />
-                    </div>
-                    <div style={{ overflow: "hidden" }}>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#e6edf3", marginBottom: 1 }}>{m.name}</div>
-                      <div style={{ fontSize: 11, color: "#3d4450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                      {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d4450" }}>—</span>}
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: msColor }}>
-                        {m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}
-                      </span>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <span style={{
-                        display: "inline-block", padding: "2px 10px", borderRadius: 20,
-                        fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
-                        background: isUp ? "rgba(34,197,94,0.1)" : isDown ? "rgba(239,68,68,0.1)" : "rgba(74,85,98,0.2)",
-                        color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#4d5562",
-                        border: `1px solid ${isUp ? "rgba(34,197,94,0.25)" : isDown ? "rgba(239,68,68,0.25)" : "#2a2f38"}`,
-                      }}>
-                        {m.lastStatus}
-                      </span>
-                    </div>
-                    <div style={{ textAlign: "right", fontSize: 11, color: "#3d4450" }}>{timeAgo(m.lastChecked)}</div>
-                    {confirmDelete === m.id ? (
-                      <div style={{ display: "flex", gap: 4 }}>
-                        <button onClick={() => deleteMonitor(m.id)}
-                          style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", padding: "3px 8px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
-                          Remove
-                        </button>
-                        <button onClick={() => setConfirmDelete(null)}
-                          style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
-                          No
-                        </button>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ position: "relative", width: 9, height: 9, flexShrink: 0 }}>
+                          {isUp && <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "ping 2.5s ease-out infinite" }} />}
+                          <div style={{ position: "relative", width: 9, height: 9, borderRadius: "50%", background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38" }} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 14, color: "#e6edf3" }}>{m.name}</div>
+                          <div style={{ fontSize: 11, color: "#3d4450" }}>{m.url}</div>
+                        </div>
                       </div>
-                    ) : (
-                      <button onClick={() => setConfirmDelete(m.id)}
-                        style={{ background: "transparent", border: "1px solid #2a2f38", color: "#3d4450", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        ✕
-                      </button>
-                    )}
+                      {confirmDelete === m.id ? (
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <button onClick={() => deleteMonitor(m.id)}
+                            style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                            Remove
+                          </button>
+                          <button onClick={() => setConfirmDelete(null)}
+                            style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "4px 8px", borderRadius: 5, cursor: "pointer", fontSize: 12 }}>
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setConfirmDelete(m.id)}
+                          style={{ background: "transparent", border: "1px solid #2a2f38", color: "#3d4450", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 10, borderTop: "1px solid #2a2f38" }}>
+                      <div>
+                        <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Uptime</div>
+                        {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d4450" }}>—</span>}
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Response</div>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: msColor }}>
+                          {m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}
+                        </span>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Checked</div>
+                        <span style={{ fontSize: 12, color: "#4d5562" }}>{timeAgo(m.lastChecked)}</span>
+                      </div>
+                    </div>
                   </div>
                 );
               })}

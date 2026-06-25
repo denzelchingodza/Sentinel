@@ -35,3 +35,17 @@ body {
 
 .fade-up { animation: fadeUp 0.6s ease both; }
 .fade-in { animation: fadeIn 0.45s ease both; }
+
+/* ── Responsive utilities ─────────────────────────────────── */
+@media (max-width: 640px) {
+  .stat-grid     { grid-template-columns: repeat(2, 1fr) !important; }
+  .mon-desktop   { display: none !important; }
+  .mon-mobile    { display: flex !important; }
+  .nav-email     { display: none !important; }
+  .nav-actions   { gap: 6px !important; }
+  .dash-padding  { padding: 16px !important; }
+  .hero-padding  { padding: 48px 20px 40px !important; }
+  .hero-title    { font-size: 28px !important; }
+  .footer-pad    { padding: 16px 20px !important; }
+  .nav-pad       { padding: 0 16px !important; }
+}
