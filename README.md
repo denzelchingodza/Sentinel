@@ -12,7 +12,7 @@ That curiosity turned into Sentinel.
 
 Sentinel is a uptime monitoring system. You give it a URL, it checks that URL every 60 seconds, and if it ever goes down it sends you an email. When it comes back up, it sends you another one. In between, it tracks response times and calculates uptime percentage so you have a real picture of how your services are performing over time.
 
-There's a dashboard where you can see everything at a glance — which services are up, how fast they're responding, whether anything is currently broken, and how long it's been that way.
+There's a dashboard where you can see which services are up, how fast they're responding, whether anything is currently broken, and how long it's been that way.
 
 It's nothing you couldn't piece together from paid tools. But building it myself meant I actually understood every part of it.
 
