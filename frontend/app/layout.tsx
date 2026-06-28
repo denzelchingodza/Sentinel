@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sentinel — Uptime Monitoring",
+  title: "Sentinel. Uptime Monitoring",
   description: "Serverless uptime monitoring and incident alerting",
 };
 
