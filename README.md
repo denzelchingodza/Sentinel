@@ -2,8 +2,6 @@
 
 Uptime monitoring for your services. Add a URL, get an email when it goes down, another when it recovers.
 
-**Live:** [sentinel-kappa-wine.vercel.app](https://sentinel-kappa-wine.vercel.app)
-
 ---
 
 ## How it works
