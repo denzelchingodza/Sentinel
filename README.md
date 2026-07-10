@@ -48,7 +48,20 @@ Lambda (API)  -->  DynamoDB (monitors, checks, incidents)
 | Auth | Amazon Cognito |
 | API | Amazon API Gateway |
 | Infrastructure | Terraform |
-| Frontend | HTML, CSS, JavaScript |
+| Frontend | Next.js (App Router) |
+
+---
+
+## User accounts
+
+Authentication is handled entirely by Amazon Cognito. Users sign up with their email and password, verify their address with a one-time code, and are issued a JWT that is attached to every API request.
+
+The frontend supports the full auth lifecycle:
+
+- **Sign up** — email + password, with a verification code sent to the inbox
+- **Sign in** — JWT issued on success, stored in the browser session
+- **Forgot password** — sends a reset code to the user's email
+- **Delete account** — users can permanently delete their Cognito account from the dashboard settings; all session data is cleared and they are redirected to the sign-in page
 
 ---
 
@@ -84,7 +97,7 @@ Terraform provisions all Lambda functions, DynamoDB tables, EventBridge rules, S
 
 **4. Deploy the frontend**
 
-Set `API_URL` in the frontend config to your API Gateway endpoint. Deploy to any static hosting platform.
+Copy `.env.local.example` to `.env.local` and fill in your Cognito User Pool ID, Client ID, and API Gateway URL. Deploy the `frontend/` directory to Vercel or any platform that supports Next.js.
 
 ---
 
