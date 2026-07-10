@@ -100,3 +100,18 @@ export function confirmForgotPassword(email: string, code: string, newPassword: 
     });
   });
 }
+
+// ── Delete the current user's account from Cognito ───────────────────────────
+export function deleteAccount(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const user = getPool().getCurrentUser();
+    if (!user) return reject(new Error("No user is signed in."));
+    user.getSession((err: Error | null, session: CognitoUserSession | null) => {
+      if (err || !session?.isValid()) return reject(new Error("Session expired. Please sign in again."));
+      user.deleteUser((deleteErr) => {
+        if (deleteErr) reject(deleteErr);
+        else resolve();
+      });
+    });
+  });
+}
