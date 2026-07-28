@@ -103,7 +103,7 @@ Copy `.env.local.example` to `.env.local` and fill in your Cognito User Pool ID,
 
 ## What I learned
 
-I had never used Terraform, DynamoDB, EventBridge, or SES before this project. I learned all of them because the project needed them. At the end I had a fully deployed, production-grade monitoring system running on infrastructure I had provisioned from scratch with code.
+I had never used Terraform, DynamoDB, EventBridge, or SES before this project. I learned all of them because the project needed them. At the end I had a fully deployed, production grade monitoring system running on infrastructure I had provisioned from scratch with code.
 
 That experience is the reason cloud infrastructure does not intimidate me anymore. Before Sentinel, AWS felt like a black box. After it, it feels like a tool.
 
@@ -113,7 +113,7 @@ That experience is the reason cloud infrastructure does not intimidate me anymor
 
 **SES not sending any emails**
 
-AWS SES starts in sandbox mode. In sandbox mode, both the sender and recipient addresses must be individually verified in the SES console before any email can be sent. The Lambda was executing without errors, but no emails arrived. Verified the sender address in SES, and alerts started working immediately. In production, SES sandbox limits require a support request to AWS to exit — something to plan for before launch.
+AWS SES starts in sandbox mode. In sandbox mode, both the sender and recipient addresses must be individually verified in the SES console before any email can be sent. The Lambda was executing without errors, but no emails arrived. Verified the sender address in SES, and alerts started working immediately. In production, SES sandbox limits require a support request to AWS to exit something to plan for before launch.
 
 **Lambda had no permissions to write to DynamoDB or send via SES**
 
