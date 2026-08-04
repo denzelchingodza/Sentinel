@@ -121,11 +121,11 @@ The Lambda functions deployed successfully but failed at runtime with `AccessDen
 
 **EventBridge trigger not firing**
 
-The monitor Lambda deployed but never executed on schedule. The issue was a name mismatch — the EventBridge module referenced `module.lambda.monitor_lambda_name` but the Lambda module output was named `lambda_monitor_name`. Terraform silently used an empty string, creating a rule that pointed at nothing. Fixed by aligning output and variable names across modules and running `terraform plan` to verify the dependency graph before applying.
+The monitor Lambda deployed but never executed on schedule. The issue was a name mismatch the EventBridge module referenced `module.lambda.monitor_lambda_name` but the Lambda module output was named `lambda_monitor_name`. Terraform silently used an empty string, creating a rule that pointed at nothing. Fixed by aligning output and variable names across modules and running `terraform plan` to verify the dependency graph before applying.
 
 **Terraform state confusion causing duplicate resources**
 
-Running `terraform apply` a second time after manually deleting a resource in the AWS console caused Terraform to try creating it again while its state entry still existed, producing `ResourceAlreadyExists` errors. Learned that `terraform.tfstate` is the source of truth — if a resource is deleted outside Terraform, the state must be updated with `terraform state rm` before re-applying.
+Running `terraform apply` a second time after manually deleting a resource in the AWS console caused Terraform to try creating it again while its state entry still existed, producing `ResourceAlreadyExists` errors. Learned that `terraform.tfstate` is the source of truth if a resource is deleted outside Terraform, the state must be updated with `terraform state rm` before re-applying.
 
 **Cognito JWT authorizer not blocking unauthenticated requests**
 
@@ -136,9 +136,9 @@ The API Gateway authorizer was configured but initially had the wrong `authoriza
 ## Technical notes
 
 - **Modular Terraform** — each AWS service (Cognito, DynamoDB, Lambda, EventBridge, API Gateway, SES) lives in its own `modules/` directory with its own `main.tf`, `variables.tf`, and `outputs.tf`. Module outputs are passed as inputs to dependent modules (e.g., DynamoDB table ARNs into the Lambda module for IAM policies).
-- **Three DynamoDB tables** — `monitors` (user-defined URLs), `checks` (every result from every check, with response time), `incidents` (open/closed outage records). DynamoDB's on-demand billing means no capacity planning needed for this scale.
-- **Daemon pattern** — the monitor Lambda queries all monitors, checks each URL with a timeout, writes the result to `checks`, and updates or creates an incident record if the status changed. The entire function is stateless — it reads current state from DynamoDB at the start of every invocation.
-- **Cognito full auth lifecycle** — sign-up triggers a verification email via Cognito's built-in email provider. Password reset uses the `forgotPassword` / `confirmForgotPassword` flow. Account deletion calls `deleteUser` on the Cognito client and clears the local session, then redirects to sign-in.
+- **Three DynamoDB tables** — `monitors` (user-defined URLs), `checks` (every result from every check, with response time), `incidents` (open/closed outage records). DynamoDB's on demand billing means no capacity planning needed for this scale.
+- **Daemon pattern** — the monitor Lambda queries all monitors, checks each URL with a timeout, writes the result to `checks`, and updates or creates an incident record if the status changed. The entire function is stateless it reads current state from DynamoDB at the start of every invocation.
+- **Cognito full auth lifecycle** — sign up triggers a verification email via Cognito's built in email provider. Password reset uses the `forgotPassword` / `confirmForgotPassword` flow. Account deletion calls `deleteUser` on the Cognito client and clears the local session, then redirects to sign in.
 
 ---
 
