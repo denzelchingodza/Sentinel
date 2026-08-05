@@ -31,7 +31,6 @@ export default function Home() {
       <nav className="nav-pad" style={{ display: "flex", alignItems: "center", padding: "18px 40px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 600, letterSpacing: "-0.2px", color: "#e6edf3" }}>
           <ShieldIcon />
-          Sentinel
         </div>
       </nav>
 
