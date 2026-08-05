@@ -27,12 +27,8 @@ export default function Home() {
   return (
     <div style={{ minHeight: "100vh", background: "#0f1117", color: "#e6edf3", display: "flex", flexDirection: "column" }}>
 
-      {/* Nav */}
-      <nav className="nav-pad" style={{ display: "flex", alignItems: "center", padding: "18px 40px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 600, letterSpacing: "-0.2px", color: "#e6edf3" }}>
-          <ShieldIcon />
-        </div>
-      </nav>
+      {/* Nav — empty */}
+      <nav className="nav-pad" style={{ padding: "18px 40px", height: "60px" }} />
 
       {/* Hero */}
       <section className="hero-padding" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", padding: "80px 40px 64px" }}>
