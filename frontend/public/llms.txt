@@ -1,0 +1,25 @@
+# Sentinel
+
+Serverless uptime monitoring and incident alerting, built on AWS.
+
+## What it does
+
+Monitors URLs at regular intervals using AWS EventBridge and Lambda. Sends email alerts via SES when a service goes down and resolves incidents when it comes back up. All infrastructure is provisioned with Terraform.
+
+## Stack
+
+- Frontend: Next.js, TypeScript, Tailwind CSS
+- Auth: AWS Cognito
+- Backend: AWS Lambda (Node.js), API Gateway
+- Database: DynamoDB
+- Scheduler: AWS EventBridge
+- Alerts: AWS SES
+- Infrastructure: Terraform
+
+## Live
+
+https://sentinel-kappa-wine.vercel.app
+
+## Author
+
+Denzel Chingodza — denzel.chingodza@icloud.com

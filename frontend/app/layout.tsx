@@ -12,9 +12,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://sentinel-kappa-wine.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Sentinel. Uptime Monitoring",
-  description: "Serverless uptime monitoring and incident alerting",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    template: "%s — Sentinel",
+    default: "Sentinel — Serverless uptime monitoring",
+  },
+  description: "Serverless uptime monitoring and incident alerting. Get notified the moment a service goes down.",
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    title: "Sentinel — Serverless uptime monitoring",
+    description: "Serverless uptime monitoring and incident alerting. Get notified the moment a service goes down.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Sentinel" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sentinel — Serverless uptime monitoring",
+    description: "Serverless uptime monitoring and incident alerting.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
