@@ -109,7 +109,10 @@ export default function Home() {
               </a>
               . All rights reserved.
             </span>
-            <span style={{ fontSize: 11, color: "#2d333b" }}>Serverless · Zero downtime · No servers to manage</span>
+            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+              <Link href="/privacy" style={{ fontSize: 11, color: "#3d4450", textDecoration: "none" }}>Privacy</Link>
+              <span style={{ fontSize: 11, color: "#2d333b" }}>Serverless · Zero downtime · No servers to manage</span>
+            </div>
           </div>
         </div>
       </footer>

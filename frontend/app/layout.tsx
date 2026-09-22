@@ -35,6 +35,14 @@ export const metadata: Metadata = {
     description: "Serverless uptime monitoring and incident alerting.",
     images: ["/og-image.png"],
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Sentinel",
+  },
+  other: {
+    "theme-color": "#0f1117",
+  },
 };
 
 export default function RootLayout({
