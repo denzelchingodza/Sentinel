@@ -95,12 +95,12 @@ export default function Home() {
       <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
         {/* Wordmark — blends with app */}
-        <div style={{ padding: "28px 40px", display: "flex", alignItems: "center", gap: 9 }}>
+        <div style={{ padding: "28px 48px", display: "flex", alignItems: "center", gap: 9 }}>
           <ShieldIcon size={15} />
           <span style={{ fontWeight: 600, fontSize: 13, color: "#2e4a5e", letterSpacing: "0.02em" }}>Sentinel</span>
         </div>
 
-        <main style={{ maxWidth: 960, margin: "0 auto", padding: "20px 32px 80px" }}>
+        <main style={{ padding: "20px 48px 80px" }}>
 
           {/* HERO — no button */}
           <div style={{ paddingBottom: 72, maxWidth: 540 }}>
@@ -227,7 +227,7 @@ export default function Home() {
         </main>
 
         {/* FOOTER */}
-        <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "22px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "22px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <span style={{ fontSize: 11, color: "#3d607a" }}>2026 Denzel Chingodza</span>
           <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
             <Link href="/privacy" style={{ fontSize: 11, color: "#3d607a", textDecoration: "none" }}>Privacy</Link>
