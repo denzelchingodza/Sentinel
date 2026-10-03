@@ -15,6 +15,8 @@ Sentinel monitors URLs and tracks their uptime over time. Every 60 seconds, a La
 
 The entire backend is serverless. There are no servers to manage, no processes to keep alive, and no infrastructure to babysit. EventBridge triggers the monitor Lambda on a schedule. API Gateway sits in front of the API Lambda with Cognito JWT authentication on every route. DynamoDB handles three tables: monitors, check history, and incidents. Everything is provisioned with Terraform.
 
+If SES is unavailable when an alert needs to fire, the notification payload is pushed to an SQS queue instead of being dropped. A Dead Letter Queue is also attached to the monitor Lambda itself, so any invocation that crashes entirely lands somewhere inspectable rather than disappearing silently. Each monitor is processed inside its own error boundary, meaning one bad URL cannot take down the checks for everything else.
+
 ---
 
 ## Architecture
@@ -25,6 +27,8 @@ EventBridge (60s schedule)
         v
 Lambda (monitor)  -->  DynamoDB (checks, incidents)
                    -->  SES (email alerts)
+                   -->  SQS (fallback queue if SES is down)
+                   -->  SQS DLQ (catches failed Lambda invocations)
 
 Client
   |
@@ -45,6 +49,7 @@ Lambda (API)  -->  DynamoDB (monitors, checks, incidents)
 | Scheduling | Amazon EventBridge |
 | Database | Amazon DynamoDB |
 | Email | Amazon SES |
+| Queue | Amazon SQS |
 | Auth | Amazon Cognito |
 | API | Amazon API Gateway |
 | Infrastructure | Terraform |
@@ -133,12 +138,24 @@ The API Gateway authorizer was configured but initially had the wrong `authoriza
 
 ---
 
+**SES alert dropped silently when the service was temporarily unavailable**
+
+SES can return throttling or service errors under certain conditions. The original code called `ses.send()` directly with no error handling — if it threw, the alert was lost and nothing in the logs indicated why. Fixed by wrapping the SES call in a try/catch and pushing the full notification payload to an SQS queue on failure. The queue retains messages for 24 hours, giving time to reprocess them once SES recovers. A Dead Letter Queue is also attached to the monitor Lambda itself so that invocation-level failures are captured even when the per-monitor error boundary doesn't catch them.
+
+**One failing monitor was silently killing checks for all other monitors**
+
+The monitor Lambda processes all active monitors in a `Promise.all`. If one monitor's processing threw an unhandled error, the entire invocation failed — all other monitors in that batch got no check result written and no incident detection ran. Fixed by wrapping each monitor's processing block in its own try/catch so a bad monitor logs its error and is skipped, while every other monitor continues normally.
+
+---
+
 ## Technical notes
 
 - **Modular Terraform** — each AWS service (Cognito, DynamoDB, Lambda, EventBridge, API Gateway, SES) lives in its own `modules/` directory with its own `main.tf`, `variables.tf`, and `outputs.tf`. Module outputs are passed as inputs to dependent modules (e.g., DynamoDB table ARNs into the Lambda module for IAM policies).
 - **Three DynamoDB tables** — `monitors` (user-defined URLs), `checks` (every result from every check, with response time), `incidents` (open/closed outage records). DynamoDB's on demand billing means no capacity planning needed for this scale.
 - **Daemon pattern** — the monitor Lambda queries all monitors, checks each URL with a timeout, writes the result to `checks`, and updates or creates an incident record if the status changed. The entire function is stateless it reads current state from DynamoDB at the start of every invocation.
 - **Cognito full auth lifecycle** — sign up triggers a verification email via Cognito's built in email provider. Password reset uses the `forgotPassword` / `confirmForgotPassword` flow. Account deletion calls `deleteUser` on the Cognito client and clears the local session, then redirects to sign in.
+- **Cognito session caching** — `getIdToken()` is called on every API request from the frontend. Previously each call instantiated a new `CognitoUserPool`, fetched the current user, and read from localStorage. Now the session is cached in a module-level variable and reused until it is within 5 minutes of its expiry, at which point it is refreshed. The cache is cleared immediately on sign-out.
+- **SQS alert queue** — the queue uses a 60-second visibility timeout so that if something reads a message and fails to process it, it becomes available again for retry. Messages are retained for 24 hours. The same queue doubles as the Lambda's Dead Letter Queue, keeping the infrastructure footprint minimal.
 
 ---
 
