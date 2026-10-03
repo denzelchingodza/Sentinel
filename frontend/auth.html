@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel — Sign in</title>
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6/dist/amazon-cognito-identity.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #181b21;
+      color: #c9d1d9;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .wrap { width: 100%; max-width: 380px; }
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; justify-content: center; }
+    .logo-name { font-weight: 700; font-size: 20px; color: #e6edf3; }
+    .card { background: #1e2228; border: 1px solid #2a2f38; border-radius: 12px; padding: 28px 28px 24px; }
+    .card-title { font-size: 18px; font-weight: 700; color: #e6edf3; margin-bottom: 4px; }
+    .card-sub   { font-size: 13px; color: #4d5562; margin-bottom: 24px; }
+    .fields { display: flex; flex-direction: column; gap: 14px; }
+    .field-group { display: flex; flex-direction: column; }
+    label {
+      font-size: 11px; color: #6e7681; display: block; margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .label-row label { margin-bottom: 0; }
+    input[type=email], input[type=password], input[type=text] {
+      width: 100%; background: #14161c; border: 1px solid #2a2f38; border-radius: 7px;
+      color: #e6edf3; padding: 10px 13px; font-size: 14px; outline: none;
+      font-family: inherit; transition: border-color 0.15s;
+    }
+    input:focus { border-color: #4a9eff; }
+    .code-input { letter-spacing: 0.2em; font-size: 18px; }
+    .btn-primary {
+      width: 100%; background: #4a9eff; border: none; color: #fff;
+      padding: 11px; border-radius: 7px; cursor: pointer; font-size: 14px;
+      font-weight: 600; margin-top: 8px; font-family: inherit; transition: opacity 0.15s;
+    }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-link { background: none; border: none; color: #4a9eff; cursor: pointer; font-size: 12px; padding: 0; font-family: inherit; }
+    .btn-ghost {
+      background: transparent; border: none; color: #4d5562; cursor: pointer;
+      font-size: 13px; margin-top: 2px; font-family: inherit; width: 100%;
+    }
+    .alert-error {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 7px; padding: 9px 12px; margin-bottom: 16px; font-size: 13px; color: #f87171;
+    }
+    .alert-info {
+      background: rgba(74,158,255,0.07); border: 1px solid rgba(74,158,255,0.2);
+      border-radius: 7px; padding: 9px 12px; margin-bottom: 16px; font-size: 13px; color: #93c5fd;
+    }
+    .toggle { text-align: center; font-size: 13px; color: #4d5562; margin-top: 18px; }
+    .toggle .btn-link { font-size: 13px; font-weight: 500; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+        stroke="#4a9eff" stroke-width="1.5" stroke-linejoin="round" fill="rgba(74,158,255,0.08)"/>
+      <path d="M9 12l2 2 4-4" stroke="#4a9eff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-name">Sentinel</span>
+  </div>
+
+  <div class="card">
+    <h2 class="card-title" id="card-title">Sign in</h2>
+    <p  class="card-sub"   id="card-sub">Welcome back.</p>
+
+    <div id="alert-error" class="alert-error hidden"></div>
+    <div id="alert-info"  class="alert-info  hidden"></div>
+
+    <!-- signin -->
+    <div id="s-signin">
+      <div class="fields">
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="si-email" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="field-group">
+          <div class="label-row">
+            <label>Password</label>
+            <button class="btn-link" onclick="show('forgot')">Forgot password?</button>
+          </div>
+          <input type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" id="si-btn" onclick="doSignIn()">Sign in</button>
+      </div>
+    </div>
+
+    <!-- signup -->
+    <div id="s-signup" class="hidden">
+      <div class="fields">
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input type="password" id="su-pass" placeholder="Min 8 chars, include a number" autocomplete="new-password">
+        </div>
+        <button class="btn-primary" id="su-btn" onclick="doSignUp()">Create account</button>
+      </div>
+    </div>
+
+    <!-- confirm -->
+    <div id="s-confirm" class="hidden">
+      <div class="fields">
+        <div class="field-group">
+          <label>Verification code</label>
+          <input type="text" id="conf-code" placeholder="123456" class="code-input" autocomplete="one-time-code">
+        </div>
+        <button class="btn-primary" id="conf-btn" onclick="doConfirm()">Verify &amp; sign in</button>
+      </div>
+    </div>
+
+    <!-- forgot -->
+    <div id="s-forgot" class="hidden">
+      <div class="fields">
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="fp-email" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <button class="btn-primary" id="fp-btn" onclick="doForgot()">Send reset code</button>
+        <button class="btn-ghost" onclick="show('signin')">← Back to sign in</button>
+      </div>
+    </div>
+
+    <!-- reset -->
+    <div id="s-reset" class="hidden">
+      <div class="fields">
+        <div class="field-group">
+          <label>Reset code</label>
+          <input type="text" id="rp-code" placeholder="123456" class="code-input" autocomplete="one-time-code">
+        </div>
+        <div class="field-group">
+          <label>New password</label>
+          <input type="password" id="rp-pass" placeholder="Min 8 chars, include a number" autocomplete="new-password">
+        </div>
+        <button class="btn-primary" id="rp-btn" onclick="doReset()">Set new password</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="toggle" id="toggle-row">
+    Don't have an account?
+    <button class="btn-link" onclick="toggle()">Sign up</button>
+  </p>
+</div>
+
+<script>
+  // ── Config ────────────────────────────────────────────────────────────────
+  const POOL_ID   = 'af-south-1_jQVVRsIdS';
+  const CLIENT_ID = '8tltntn8rqfe7gkdn794g6a7c';
+
+  const pool = new AmazonCognitoIdentity.CognitoUserPool({ UserPoolId: POOL_ID, ClientId: CLIENT_ID });
+
+  let screen = 'signin';
+  let pendingEmail = '';
+  let pendingPass  = '';
+
+  const SCREENS = ['signin','signup','confirm','forgot','reset'];
+  const META = {
+    signin:  { title:'Sign in',           sub:'Welcome back.' },
+    signup:  { title:'Create account',    sub:"Get started — it's free." },
+    confirm: { title:'Verify your email', sub:'' },
+    forgot:  { title:'Reset password',    sub:"Enter your email and we'll send a code." },
+    reset:   { title:'Set new password',  sub:'' },
+  };
+
+  // ── Session check ─────────────────────────────────────────────────────────
+  (function() {
+    const u = pool.getCurrentUser();
+    if (!u) return;
+    u.getSession((err, s) => { if (!err && s && s.isValid()) go('/dashboard'); });
+  })();
+
+  // ── Screen management ─────────────────────────────────────────────────────
+  function show(name) {
+    clearAlerts();
+    screen = name;
+    SCREENS.forEach(s => document.getElementById('s-'+s).classList.toggle('hidden', s !== name));
+    document.getElementById('card-title').textContent = META[name].title;
+    const sub = document.getElementById('card-sub');
+    if (name === 'confirm' || name === 'reset') sub.textContent = 'Code sent to ' + pendingEmail;
+    else sub.textContent = META[name].sub;
+    document.getElementById('toggle-row').classList.toggle('hidden', name !== 'signin' && name !== 'signup');
+    document.getElementById('toggle-row').innerHTML =
+      screen === 'signin'
+        ? 'Don\'t have an account? <button class="btn-link" onclick="toggle()">Sign up</button>'
+        : 'Already have an account? <button class="btn-link" onclick="toggle()">Sign in</button>';
+  }
+
+  function toggle() { show(screen === 'signin' ? 'signup' : 'signin'); }
+
+  // ── Alerts ────────────────────────────────────────────────────────────────
+  function clearAlerts() {
+    ['alert-error','alert-info'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  }
+  function err(msg) {
+    const el = document.getElementById('alert-error');
+    el.textContent = msg; el.classList.remove('hidden');
+    document.getElementById('alert-info').classList.add('hidden');
+  }
+  function info(msg) {
+    const el = document.getElementById('alert-info');
+    el.textContent = msg; el.classList.remove('hidden');
+    document.getElementById('alert-error').classList.add('hidden');
+  }
+
+  function friendly(e) {
+    const m = e && e.message ? e.message : '';
+    if (m.includes('User does not exist') || m.includes('Incorrect username or password')) return 'Incorrect email or password.';
+    if (m.includes('User is not confirmed')) return 'Please confirm your email before signing in.';
+    if (m.includes('UsernameExistsException')) return 'An account with this email already exists.';
+    if (m.includes('InvalidPasswordException') || m.includes('Password did not conform')) return 'Password must be at least 8 characters and include a number.';
+    if (m.includes('CodeMismatchException') || m.includes('Invalid verification code')) return 'That code is incorrect. Check your email and try again.';
+    if (m.includes('ExpiredCodeException')) return 'That code has expired. Request a new one.';
+    if (m.includes('LimitExceededException')) return 'Too many attempts. Please wait a few minutes and try again.';
+    if (m.includes('UserNotFoundException')) return 'No account found with that email address.';
+    return m || 'Something went wrong. Please try again.';
+  }
+
+  // ── Loading state ─────────────────────────────────────────────────────────
+  function setBtn(id, loading, normal, busy) {
+    const b = document.getElementById(id);
+    b.disabled = loading;
+    b.textContent = loading ? busy : normal;
+  }
+
+  // ── Cognito helpers ───────────────────────────────────────────────────────
+  function cognitoSignIn(email, password) {
+    return new Promise((res, rej) => {
+      const user = new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: pool });
+      user.authenticateUser(
+        new AmazonCognitoIdentity.AuthenticationDetails({ Username: email, Password: password }),
+        { onSuccess: res, onFailure: rej }
+      );
+    });
+  }
+
+  function go(path) { window.location.replace(path); }
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  async function doSignIn() {
+    const email = v('si-email'), pass = v('si-pass');
+    if (!email || !pass) return err('Please fill in all fields.');
+    setBtn('si-btn', true, 'Sign in', 'Signing in…'); clearAlerts();
+    try { await cognitoSignIn(email, pass); go('/dashboard'); }
+    catch(e) { err(friendly(e)); setBtn('si-btn', false, 'Sign in', ''); }
+  }
+
+  async function doSignUp() {
+    const email = v('su-email'), pass = v('su-pass');
+    if (!email || !pass) return err('Please fill in all fields.');
+    setBtn('su-btn', true, 'Create account', 'Creating account…'); clearAlerts();
+    try {
+      await new Promise((res, rej) => {
+        pool.signUp(email, pass,
+          [new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'email', Value:email })],
+          [], (e) => e ? rej(e) : res()
+        );
+      });
+      pendingEmail = email; pendingPass = pass;
+      info('Check your inbox — we sent a 6-digit verification code.');
+      show('confirm');
+    } catch(e) { err(friendly(e)); }
+    finally { setBtn('su-btn', false, 'Create account', ''); }
+  }
+
+  async function doConfirm() {
+    const code = v('conf-code');
+    if (!code) return err('Please enter the verification code.');
+    setBtn('conf-btn', true, 'Verify & sign in', 'Verifying…'); clearAlerts();
+    try {
+      await new Promise((res, rej) => {
+        new AmazonCognitoIdentity.CognitoUser({ Username: pendingEmail, Pool: pool })
+          .confirmRegistration(code, true, (e) => e ? rej(e) : res());
+      });
+      await cognitoSignIn(pendingEmail, pendingPass);
+      go('/dashboard');
+    } catch(e) { err(friendly(e)); setBtn('conf-btn', false, 'Verify & sign in', ''); }
+  }
+
+  async function doForgot() {
+    const email = v('fp-email');
+    if (!email) return err('Please enter your email address.');
+    setBtn('fp-btn', true, 'Send reset code', 'Sending…'); clearAlerts();
+    try {
+      await new Promise((res, rej) => {
+        new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: pool })
+          .forgotPassword({ onSuccess: () => res(), onFailure: rej });
+      });
+      pendingEmail = email;
+      info('Reset code sent to ' + email);
+      show('reset');
+    } catch(e) { err(friendly(e)); }
+    finally { setBtn('fp-btn', false, 'Send reset code', ''); }
+  }
+
+  async function doReset() {
+    const code = v('rp-code'), pass = v('rp-pass');
+    if (!code || !pass) return err('Please fill in all fields.');
+    setBtn('rp-btn', true, 'Set new password', 'Resetting…'); clearAlerts();
+    try {
+      await new Promise((res, rej) => {
+        new AmazonCognitoIdentity.CognitoUser({ Username: pendingEmail, Pool: pool })
+          .confirmPassword(code, pass, { onSuccess: () => res(), onFailure: rej });
+      });
+      info('Password updated. Signing you in…');
+      await cognitoSignIn(pendingEmail, pass);
+      go('/dashboard');
+    } catch(e) { err(friendly(e)); setBtn('rp-btn', false, 'Set new password', ''); }
+  }
+
+  function v(id) { return document.getElementById(id).value.trim(); }
+
+  // ── Keyboard ──────────────────────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (screen==='signin')  doSignIn();
+    if (screen==='signup')  doSignUp();
+    if (screen==='confirm') doConfirm();
+    if (screen==='forgot')  doForgot();
+    if (screen==='reset')   doReset();
+  });
+</script>
+</body>
+</html>
