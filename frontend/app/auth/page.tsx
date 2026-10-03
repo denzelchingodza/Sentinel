@@ -46,6 +46,8 @@ const btnPrimary: React.CSSProperties = {
   marginTop: 8,
 };
 
+const REMEMBERED_EMAIL_KEY = "sentinel_last_email";
+
 export default function AuthPage() {
   const router = useRouter();
   const [screen, setScreen]           = useState<Screen>("signin");
@@ -63,6 +65,12 @@ export default function AuthPage() {
   const [info, setInfo]               = useState<string | null>(null);
 
   useEffect(() => {
+    // Pre-fill email from last successful sign-in
+    try {
+      const saved = localStorage.getItem(REMEMBERED_EMAIL_KEY);
+      if (saved) setEmail(saved);
+    } catch { /* localStorage unavailable */ }
+
     getSession().then((s) => {
       if (s) { setRedirecting(true); router.replace("/dashboard"); }
       else setSessionChecked(true);
@@ -93,10 +101,15 @@ export default function AuthPage() {
     return "Something went wrong. Please try again.";
   }
 
+  function rememberEmail(e: string) {
+    try { localStorage.setItem(REMEMBERED_EMAIL_KEY, e); } catch { /* ignore */ }
+  }
+
   async function handleSignIn() {
     setLoading(true); setError(null);
     try {
       await signIn(email, password);
+      rememberEmail(email);
       setRedirecting(true);
       router.replace("/dashboard");
     } catch (err) { setError(friendlyError(err)); setLoading(false); }
@@ -117,6 +130,7 @@ export default function AuthPage() {
     try {
       await confirmSignUp(email, confirmCode);
       await signIn(email, password);
+      rememberEmail(email);
       setRedirecting(true);
       router.replace("/dashboard");
     } catch (err) { setError(friendlyError(err)); setLoading(false); }
@@ -137,6 +151,7 @@ export default function AuthPage() {
     try {
       await confirmForgotPassword(email, resetCode, newPassword);
       await signIn(email, newPassword);
+      rememberEmail(email);
       setRedirecting(true);
       router.replace("/dashboard");
     } catch (err) { setError(friendlyError(err)); setLoading(false); }
