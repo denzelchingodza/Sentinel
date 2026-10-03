@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
 function ShieldIcon() {
@@ -51,6 +51,19 @@ const HEADING: React.CSSProperties = {
 };
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -85,9 +98,59 @@ export default function Home() {
 
       <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
-        <div style={{ padding: "28px 48px", display: "flex", alignItems: "center", gap: 8 }}>
-          <ShieldIcon />
-          <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+        <div style={{ padding: "28px 48px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ShieldIcon />
+            <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+          </div>
+
+          {/* Hamburger menu */}
+          <div ref={menuRef} style={{ position: "relative" }}>
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 7, padding: "8px 10px", cursor: "pointer", display: "flex", flexDirection: "column", gap: 4, alignItems: "center", justifyContent: "center" }}
+              aria-label="Menu"
+            >
+              <span style={{ display: "block", width: 16, height: 1.5, background: menuOpen ? "#6a8fa8" : "#3d607a", borderRadius: 1, transition: "background 0.2s" }} />
+              <span style={{ display: "block", width: 16, height: 1.5, background: menuOpen ? "#6a8fa8" : "#3d607a", borderRadius: 1, transition: "background 0.2s" }} />
+              <span style={{ display: "block", width: 16, height: 1.5, background: menuOpen ? "#6a8fa8" : "#3d607a", borderRadius: 1, transition: "background 0.2s" }} />
+            </button>
+
+            {menuOpen && (
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#0c1520", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "6px", minWidth: 200, zIndex: 100, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
+                {/* Top group */}
+                <Link href="/auth" onClick={() => setMenuOpen(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 6, textDecoration: "none", color: "#dce6f0", fontSize: 13, fontWeight: 600, background: "#FF9900", marginBottom: 4 }}>
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                  <span style={{ color: "#000" }}>Create account</span>
+                </Link>
+                <Link href="/auth" onClick={() => setMenuOpen(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 6, textDecoration: "none", color: "#8baec4", fontSize: 13, marginBottom: 2 }}>
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                  Sign in
+                </Link>
+
+                <div style={{ height: 1, background: "rgba(255,255,255,0.05)", margin: "6px 0" }} />
+
+                {/* Info group */}
+                <Link href="/privacy" onClick={() => setMenuOpen(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 6, textDecoration: "none", color: "#6a8fa8", fontSize: 12 }}>
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Privacy
+                </Link>
+                <a href="mailto:denzel.chingodza@icloud.com" onClick={() => setMenuOpen(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 6, textDecoration: "none", color: "#6a8fa8", fontSize: 12 }}>
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  Contact
+                </a>
+                <a href="https://github.com/denzelchingodza/Sentinel" target="_blank" rel="noopener" onClick={() => setMenuOpen(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 6, textDecoration: "none", color: "#6a8fa8", fontSize: 12 }}>
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                  GitHub
+                </a>
+              </div>
+            )}
+          </div>
         </div>
 
         <main className="page-pad" style={{ padding: "20px 48px 80px" }}>
