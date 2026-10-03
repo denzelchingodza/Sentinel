@@ -25,6 +25,12 @@ module "ses" {
   alert_email = var.alert_email
 }
 
+resource "aws_sqs_queue" "alert_dlq" {
+  name                      = "sentinel-alert-queue"
+  message_retention_seconds = 86400  # 24 hours
+  visibility_timeout_seconds = 60
+}
+
 module "lambda" {
   source               = "./modules/lambda"
   monitors_table_name  = module.dynamodb.monitors_table_name
@@ -35,6 +41,8 @@ module "lambda" {
   incidents_table_arn  = module.dynamodb.incidents_table_arn
   alert_email          = var.alert_email
   ses_arn              = module.ses.ses_identity_arn
+  alert_queue_url      = aws_sqs_queue.alert_dlq.url
+  alert_queue_arn      = aws_sqs_queue.alert_dlq.arn
 }
 
 module "eventbridge" {
