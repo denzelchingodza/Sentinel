@@ -127,6 +127,21 @@ export function confirmForgotPassword(email: string, code: string, newPassword: 
   });
 }
 
+// ── Change the current user's password ───────────────────────────────────────
+export function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const user = getPool().getCurrentUser();
+    if (!user) return reject(new Error("No user is signed in."));
+    user.getSession((err: Error | null, session: CognitoUserSession | null) => {
+      if (err || !session?.isValid()) return reject(new Error("Session expired. Please sign in again."));
+      user.changePassword(oldPassword, newPassword, (changeErr) => {
+        if (changeErr) reject(changeErr);
+        else resolve();
+      });
+    });
+  });
+}
+
 // ── Delete the current user's account from Cognito ───────────────────────────
 export function deleteAccount(): Promise<void> {
   return new Promise((resolve, reject) => {

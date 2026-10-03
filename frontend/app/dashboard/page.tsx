@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getIdToken, signOut, getSession, deleteAccount } from "../../lib/cognito";
+import { getIdToken, signOut, getSession } from "../../lib/cognito";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -80,9 +80,6 @@ export default function Dashboard() {
   const [formUrl, setFormUrl]         = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
-  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
-  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -163,16 +160,6 @@ export default function Dashboard() {
 
   const handleSignOut = () => { signOut(); router.replace("/auth"); };
 
-  const handleDeleteAccount = async () => {
-    setDeleteAccountLoading(true); setDeleteAccountError(null);
-    try {
-      await deleteAccount(); signOut(); router.replace("/auth");
-    } catch (err: unknown) {
-      setDeleteAccountError(err instanceof Error ? err.message : "Failed to delete account.");
-      setDeleteAccountLoading(false);
-    }
-  };
-
   if (!authChecked || loading) {
     return <div style={{ minHeight: "100vh", background: "#080f1a" }} />;
   }
@@ -203,7 +190,7 @@ export default function Dashboard() {
             <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
           </Link>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {userEmail && <span style={{ fontSize: 11, color: "#3d607a", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</span>}
+            {userEmail && <Link href="/account" style={{ fontSize: 11, color: "#3d607a", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{userEmail}</Link>}
             <span style={{ fontSize: 11, color: "#2e4a5e" }}>{timeAgo(lastRefresh.toISOString())}</span>
             <button onClick={refresh}
               style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#4a6a80", width: 30, height: 30, borderRadius: 6, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -365,42 +352,7 @@ export default function Dashboard() {
             </>
           )}
 
-          {/* Delete account — tucked at the bottom */}
-          <div style={{ marginTop: 64, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-            <button onClick={() => { setShowDeleteAccount(true); setDeleteAccountError(null); }}
-              style={{ background: "none", border: "none", color: "#2e4a5e", cursor: "pointer", fontSize: 12, padding: 0 }}>
-              Delete account
-            </button>
-          </div>
-
         </main>
-
-        {/* Delete account modal */}
-        {showDeleteAccount && (
-          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }}>
-            <div style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "28px", maxWidth: 400, width: "100%" }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#dce6f0", marginBottom: 8 }}>Delete account?</h3>
-              <p style={{ fontSize: 13, color: "#6a8fa8", lineHeight: 1.7, marginBottom: 20 }}>
-                This permanently deletes your account and all monitors. It cannot be undone.
-              </p>
-              {deleteAccountError && (
-                <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
-                  {deleteAccountError}
-                </div>
-              )}
-              <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => setShowDeleteAccount(false)} disabled={deleteAccountLoading}
-                  style={{ flex: 1, background: "#FF9900", border: "none", color: "#000", padding: "10px", borderRadius: 7, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
-                  Cancel
-                </button>
-                <button onClick={handleDeleteAccount} disabled={deleteAccountLoading}
-                  style={{ flex: 1, background: "transparent", border: "none", color: "#6b4444", padding: "10px", borderRadius: 7, cursor: deleteAccountLoading ? "not-allowed" : "pointer", fontSize: 13, opacity: deleteAccountLoading ? 0.5 : 1 }}>
-                  {deleteAccountLoading ? "Deleting..." : "Delete account"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </>
   );
