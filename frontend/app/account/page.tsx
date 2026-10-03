@@ -134,13 +134,13 @@ export default function AccountPage() {
           </div>
         </nav>
 
-        <main style={{ padding: "36px 48px 80px", maxWidth: 600 }}>
+        <main style={{ padding: "36px 48px 80px" }}>
 
-          {/* Profile card */}
-          <div style={CARD}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-              <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#0f1f30", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 16, color: "#6a8fa8" }}>{initials}</span>
+          {/* Profile strip — full width */}
+          <div style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#0f1f30", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 15, color: "#6a8fa8" }}>{initials}</span>
               </div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#dce6f0", marginBottom: 3 }}>{email}</div>
@@ -148,82 +148,87 @@ export default function AccountPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 6 }}>
-              <span style={{ fontSize: 10, color: "#6a8fa8", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "2px 10px" }}>Personal</span>
-              <span style={{ fontSize: 10, color: "#4a6a80", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 20, padding: "2px 10px" }}>af-south-1</span>
+              <span style={{ fontSize: 10, color: "#6a8fa8", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "3px 12px" }}>Personal</span>
+              <span style={{ fontSize: 10, color: "#4a6a80", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 20, padding: "3px 12px" }}>af-south-1</span>
             </div>
           </div>
 
-          {/* Change password */}
-          <div style={{ ...CARD, marginTop: 24 }}>
-            <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "#dce6f0", margin: "0 0 20px", lineHeight: 1.2 }}>
-              Change password
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div>
-                <label style={LABEL}>Current password</label>
-                <div style={{ position: "relative" }}>
-                  <input type={showCurrent ? "text" : "password"} value={currentPw} onChange={(e) => setCurrentPw(e.target.value)}
-                    placeholder="••••••••" style={{ ...INPUT, paddingRight: 38 }} />
-                  <button onClick={() => setShowCurrent((v) => !v)}
-                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
-                    <EyeIcon open={showCurrent} />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label style={LABEL}>New password</label>
-                <div style={{ position: "relative" }}>
-                  <input type={showNew ? "text" : "password"} value={newPw} onChange={(e) => setNewPw(e.target.value)}
-                    placeholder="••••••••" style={{ ...INPUT, paddingRight: 38 }}
-                    onKeyDown={(e) => e.key === "Enter" && handleChangePassword()} />
-                  <button onClick={() => setShowNew((v) => !v)}
-                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
-                    <EyeIcon open={showNew} />
-                  </button>
-                </div>
-              </div>
-            </div>
+          {/* Two-column grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
 
-            {pwError && (
-              <div style={{ borderLeft: "2px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginTop: 14, fontSize: 13, color: "#9b7070" }}>
-                {pwError}
-              </div>
-            )}
-            {pwSuccess && (
-              <div style={{ borderLeft: "2px solid rgba(34,197,94,0.4)", background: "rgba(34,197,94,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginTop: 14, fontSize: 13, color: "#4a8a6a" }}>
-                Password updated.
-              </div>
-            )}
-
-            <button onClick={handleChangePassword} disabled={pwLoading || !currentPw || !newPw}
-              style={{ marginTop: 18, background: "#FF9900", border: "none", color: "#000", padding: "10px 24px", borderRadius: 7, cursor: (pwLoading || !currentPw || !newPw) ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: (pwLoading || !currentPw || !newPw) ? 0.5 : 1 }}>
-              {pwLoading ? "Updating..." : "Update password"}
-            </button>
-          </div>
-
-          {/* Coming soon - AI section */}
-          <div style={{ ...CARD, marginTop: 12 }}>
-            <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "#dce6f0", margin: "0 0 4px", lineHeight: 1.2 }}>
-              Preferences
-            </h2>
-            <span style={{ fontSize: 10, color: "#4a6a80", letterSpacing: "0.06em", display: "block", marginBottom: 16 }}>coming soon</span>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {[
-                { label: "Alert threshold", desc: "Set how many failures before you get emailed." },
-                { label: "Notification windows", desc: "Silence alerts during specific hours." },
-                { label: "AI digest", desc: "Weekly plain-language summary of your uptime and trends." },
-                { label: "Smart alerting", desc: "Let the AI suppress noise and surface what actually matters." },
-              ].map((item) => (
-                <div key={item.label} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                  <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(74,106,128,0.4)", marginTop: 5, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "#6a8fa8", marginBottom: 2 }}>{item.label}</div>
-                    <div style={{ fontSize: 11, color: "#3d607a", lineHeight: 1.7 }}>{item.desc}</div>
+            {/* LEFT — Change password */}
+            <div style={CARD}>
+              <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "#dce6f0", margin: "0 0 20px", lineHeight: 1.2 }}>
+                Change password
+              </h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div>
+                  <label style={LABEL}>Current password</label>
+                  <div style={{ position: "relative" }}>
+                    <input type={showCurrent ? "text" : "password"} value={currentPw} onChange={(e) => setCurrentPw(e.target.value)}
+                      placeholder="••••••••" style={{ ...INPUT, paddingRight: 38 }} />
+                    <button onClick={() => setShowCurrent((v) => !v)}
+                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                      <EyeIcon open={showCurrent} />
+                    </button>
                   </div>
                 </div>
-              ))}
+                <div>
+                  <label style={LABEL}>New password</label>
+                  <div style={{ position: "relative" }}>
+                    <input type={showNew ? "text" : "password"} value={newPw} onChange={(e) => setNewPw(e.target.value)}
+                      placeholder="••••••••" style={{ ...INPUT, paddingRight: 38 }}
+                      onKeyDown={(e) => e.key === "Enter" && handleChangePassword()} />
+                    <button onClick={() => setShowNew((v) => !v)}
+                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                      <EyeIcon open={showNew} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {pwError && (
+                <div style={{ borderLeft: "2px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginTop: 14, fontSize: 13, color: "#9b7070" }}>
+                  {pwError}
+                </div>
+              )}
+              {pwSuccess && (
+                <div style={{ borderLeft: "2px solid rgba(34,197,94,0.4)", background: "rgba(34,197,94,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginTop: 14, fontSize: 13, color: "#4a8a6a" }}>
+                  Password updated.
+                </div>
+              )}
+
+              <button onClick={handleChangePassword} disabled={pwLoading || !currentPw || !newPw}
+                style={{ marginTop: 18, background: "#FF9900", border: "none", color: "#000", padding: "10px 24px", borderRadius: 7, cursor: (pwLoading || !currentPw || !newPw) ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: (pwLoading || !currentPw || !newPw) ? 0.5 : 1 }}>
+                {pwLoading ? "Updating..." : "Update password"}
+              </button>
             </div>
-          </div>
+
+            {/* RIGHT — Preferences (coming soon) */}
+            <div style={CARD}>
+              <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "#dce6f0", margin: "0 0 4px", lineHeight: 1.2 }}>
+                Preferences
+              </h2>
+              <span style={{ fontSize: 10, color: "#4a6a80", letterSpacing: "0.06em", display: "block", marginBottom: 18 }}>coming soon</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {[
+                  { label: "Alert threshold", desc: "Set how many failures before you get emailed." },
+                  { label: "Notification windows", desc: "Silence alerts during specific hours." },
+                  { label: "AI digest", desc: "Weekly plain-language summary of your uptime and trends." },
+                  { label: "Smart alerting", desc: "Let the AI suppress noise and surface what actually matters." },
+                ].map((item) => (
+                  <div key={item.label} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                    <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(74,106,128,0.4)", marginTop: 5, flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "#6a8fa8", marginBottom: 2 }}>{item.label}</div>
+                      <div style={{ fontSize: 11, color: "#3d607a", lineHeight: 1.7 }}>{item.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>{/* end grid */}
 
           {/* Delete account */}
           <div style={{ marginTop: 48, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.04)" }}>

@@ -190,7 +190,6 @@ export default function Dashboard() {
             <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
           </Link>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {userEmail && <Link href="/account" style={{ fontSize: 11, color: "#3d607a", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{userEmail}</Link>}
             <span style={{ fontSize: 11, color: "#2e4a5e" }}>{timeAgo(lastRefresh.toISOString())}</span>
             <button onClick={refresh}
               style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#4a6a80", width: 30, height: 30, borderRadius: 6, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -200,10 +199,13 @@ export default function Dashboard() {
               style={{ background: showForm ? "transparent" : "#FF9900", border: showForm ? "1px solid rgba(255,255,255,0.06)" : "none", color: showForm ? "#4a6a80" : "#000", padding: "6px 16px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
               {showForm ? "Cancel" : "+ Monitor"}
             </button>
-            <button onClick={handleSignOut}
-              style={{ background: "transparent", border: "none", color: "#3d607a", cursor: "pointer", fontSize: 12, padding: "6px 8px" }}>
-              Sign out
-            </button>
+            {/* Account avatar — obvious entry point to /account */}
+            <Link href="/account" title={userEmail ?? "Account"}
+              style={{ width: 30, height: 30, borderRadius: "50%", background: "#0c1520", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#6a8fa8", letterSpacing: "0.04em" }}>
+                {userEmail ? userEmail.slice(0, 2).toUpperCase() : "?"}
+              </span>
+            </Link>
           </div>
         </nav>
 
