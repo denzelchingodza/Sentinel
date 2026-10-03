@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
 function ShieldIcon() {
@@ -52,14 +52,16 @@ const HEADING: React.CSSProperties = {
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close overlay on Escape key
   useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setMenuOpen(false);
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
     }
-    if (menuOpen) document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    if (menuOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, [menuOpen]);
 
   useEffect(() => {
@@ -93,135 +95,82 @@ export default function Home() {
         .ch { transition: border-color 0.2s ease; }
         .ch:hover { border-color: rgba(255,153,0,0.2) !important; }
 
-        /* Full-screen nav overlay */
-        .nav-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 200;
-          background: #050b14;
+        .menu-item {
           display: flex;
-          flex-direction: column;
-          pointer-events: none;
-          opacity: 0;
-          transform: translateY(-12px);
-          transition: opacity 0.32s cubic-bezier(0.16,1,0.3,1),
-                      transform 0.32s cubic-bezier(0.16,1,0.3,1);
-        }
-        .nav-overlay.open {
-          pointer-events: all;
-          opacity: 1;
-          transform: translateY(0);
-        }
-        .nav-link-main {
-          font-family: 'DM Serif Display', Georgia, serif;
-          font-size: clamp(32px, 5vw, 56px);
-          font-weight: 400;
-          color: #3d607a;
-          text-decoration: none;
-          letter-spacing: -0.02em;
-          line-height: 1;
-          transition: color 0.18s ease;
-          display: block;
-          padding: 14px 0;
-        }
-        .nav-link-main:hover { color: #dce6f0; }
-        .nav-link-main.accent:hover { color: #FF9900; }
-        .nav-link-sub {
-          font-size: 12px;
-          color: #2e4a5e;
-          text-decoration: none;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          transition: color 0.18s ease;
-          display: inline-flex;
           align-items: center;
-          gap: 6px;
-        }
-        .nav-link-sub:hover { color: #6a8fa8; }
-        .ham-btn {
-          background: none;
-          border: none;
+          gap: 10px;
+          padding: 11px 14px;
+          border-radius: 7px;
+          text-decoration: none;
+          font-size: 13.5px;
+          color: #8baec4;
+          transition: background 0.15s ease, color 0.15s ease;
           cursor: pointer;
-          padding: 6px;
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          align-items: flex-end;
+          border: none;
+          background: transparent;
+          width: 100%;
+          text-align: left;
         }
-        .ham-line {
-          display: block;
-          height: 1.5px;
-          background: #3d607a;
-          border-radius: 2px;
-          transition: all 0.25s ease;
-        }
+        .menu-item:hover { background: rgba(255,255,255,0.04); color: #dce6f0; }
       `}</style>
 
       <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
-        {/* ── Full-screen overlay nav ─────────────────────────────── */}
-        <div className={`nav-overlay${menuOpen ? " open" : ""}`}>
-          {/* Top bar inside overlay */}
-          <div style={{ padding: "28px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <ShieldIcon />
-              <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
-            </div>
-            <button onClick={() => setMenuOpen(false)} className="ham-btn" aria-label="Close menu">
-              {/* X icon */}
-              <span style={{ display: "block", width: 20, height: 1.5, background: "#3d607a", borderRadius: 2, transform: "rotate(45deg) translateY(1px)" }} />
-              <span style={{ display: "block", width: 20, height: 1.5, background: "#3d607a", borderRadius: 2, marginTop: -3, transform: "rotate(-45deg) translateY(-1px)" }} />
-            </button>
-          </div>
-
-          {/* Main nav content */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 48px 0 52px" }}>
-            {/* Primary links */}
-            <div style={{ borderLeft: "1px solid rgba(255,255,255,0.05)", paddingLeft: 40, marginBottom: 56 }}>
-              <Link href="/auth" onClick={() => setMenuOpen(false)} className="nav-link-main accent"
-                style={{ color: "#FF9900" }}>
-                Create account
-              </Link>
-              <Link href="/auth" onClick={() => setMenuOpen(false)} className="nav-link-main">
-                Sign in
-              </Link>
-              <Link href="/privacy" onClick={() => setMenuOpen(false)} className="nav-link-main">
-                Privacy
-              </Link>
-            </div>
-
-            {/* Secondary links */}
-            <div style={{ display: "flex", gap: 32, paddingLeft: 40, flexWrap: "wrap" }}>
-              <a href="https://github.com/denzelchingodza/Sentinel" target="_blank" rel="noopener"
-                onClick={() => setMenuOpen(false)} className="nav-link-sub">
-                <svg width={11} height={11} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
-                GitHub
-              </a>
-              <a href="mailto:denzel.chingodza@icloud.com" onClick={() => setMenuOpen(false)} className="nav-link-sub">
-                <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                Contact
-              </a>
-            </div>
-          </div>
-
-          {/* Bottom tag */}
-          <div style={{ padding: "24px 48px", borderTop: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 11, color: "#1a2e3e", letterSpacing: "0.06em", textTransform: "uppercase" }}>Uptime monitoring · Built on AWS</span>
-            <span style={{ fontSize: 11, color: "#1a2e3e" }}>© {new Date().getFullYear()} Sentinel</span>
-          </div>
-        </div>
-
-        {/* ── Page header (always visible) ───────────────────────── */}
+        {/* ── Header ─────────────────────────────────────────────── */}
         <div style={{ padding: "28px 48px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {/* Left: wordmark */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <ShieldIcon />
             <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
           </div>
-          <button onClick={() => setMenuOpen(true)} className="ham-btn" aria-label="Open menu">
-            <span className="ham-line" style={{ width: 22 }} />
-            <span className="ham-line" style={{ width: 16 }} />
-            <span className="ham-line" style={{ width: 10 }} />
-          </button>
+
+          {/* Right: wordmark + hamburger */}
+          <div ref={menuRef} style={{ display: "flex", alignItems: "center", gap: 16, position: "relative" }}>
+            <span style={{ fontWeight: 700, fontSize: 13, color: "#6a8fa8", letterSpacing: "0.05em" }}>Sentinel</span>
+
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Menu"
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 2px", display: "flex", flexDirection: "column", gap: 5, alignItems: "center", justifyContent: "center" }}
+            >
+              <span style={{ display: "block", width: 20, height: 2, background: "#8baec4", borderRadius: 2 }} />
+              <span style={{ display: "block", width: 20, height: 2, background: "#8baec4", borderRadius: 2 }} />
+              <span style={{ display: "block", width: 20, height: 2, background: "#8baec4", borderRadius: 2 }} />
+            </button>
+
+            {/* Dropdown */}
+            {menuOpen && (
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 10px)", background: "#0c1520", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 12, padding: "6px", minWidth: 220, zIndex: 100, boxShadow: "0 12px 40px rgba(0,0,0,0.5)" }}>
+                <Link href="/auth" onClick={() => setMenuOpen(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 7, textDecoration: "none", fontSize: 13.5, fontWeight: 600, background: "#FF9900", color: "#000", marginBottom: 4 }}>
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                  Create account
+                </Link>
+
+                <Link href="/auth" onClick={() => setMenuOpen(false)} className="menu-item">
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                  Sign in
+                </Link>
+
+                <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "5px 0" }} />
+
+                <Link href="/privacy" onClick={() => setMenuOpen(false)} className="menu-item" style={{ fontSize: 12.5, color: "#6a8fa8" }}>
+                  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Privacy
+                </Link>
+
+                <a href="mailto:denzel.chingodza@icloud.com" onClick={() => setMenuOpen(false)} className="menu-item" style={{ fontSize: 12.5, color: "#6a8fa8" }}>
+                  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  Contact
+                </a>
+
+                <a href="https://github.com/denzelchingodza/Sentinel" target="_blank" rel="noopener" onClick={() => setMenuOpen(false)} className="menu-item" style={{ fontSize: 12.5, color: "#6a8fa8" }}>
+                  <svg width={12} height={12} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                  GitHub
+                </a>
+              </div>
+            )}
+          </div>
         </div>
 
         <main className="page-pad" style={{ padding: "20px 48px 80px" }}>
