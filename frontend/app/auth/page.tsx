@@ -51,7 +51,10 @@ const REMEMBERED_EMAIL_KEY = "sentinel_last_email";
 export default function AuthPage() {
   const router = useRouter();
   const [screen, setScreen]           = useState<Screen>("signin");
-  const [email, setEmail]             = useState("");
+  const [email, setEmail]             = useState(() => {
+    try { return localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? ""; }
+    catch { return ""; }
+  });
   const [password, setPassword]       = useState("");
   const [confirmCode, setConfirmCode] = useState("");
   const [resetCode, setResetCode]     = useState("");
@@ -65,12 +68,6 @@ export default function AuthPage() {
   const [info, setInfo]               = useState<string | null>(null);
 
   useEffect(() => {
-    // Pre-fill email from last successful sign-in
-    try {
-      const saved = localStorage.getItem(REMEMBERED_EMAIL_KEY);
-      if (saved) setEmail(saved);
-    } catch { /* localStorage unavailable */ }
-
     getSession().then((s) => {
       if (s) { setRedirecting(true); router.replace("/dashboard"); }
       else setSessionChecked(true);

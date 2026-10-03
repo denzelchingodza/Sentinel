@@ -158,7 +158,6 @@ export default function Dashboard() {
     setConfirmDelete(null); refresh();
   };
 
-  const handleSignOut = () => { signOut(); router.replace("/auth"); };
 
   if (!authChecked || loading) {
     return <div style={{ minHeight: "100vh", background: "#080f1a" }} />;
