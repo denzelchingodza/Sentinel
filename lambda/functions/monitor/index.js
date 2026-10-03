@@ -1,12 +1,15 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, ScanCommand, PutCommand, QueryCommand, UpdateCommand } = require("@aws-sdk/lib-dynamodb");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const { SQSClient, SendMessageCommand } = require("@aws-sdk/client-sqs");
 const https = require("https");
 const http = require("http");
 const { randomUUID } = require("crypto");
 
 const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const ses = new SESClient({ region: process.env.AWS_SES_REGION || "af-south-1" });
+const sqs = new SQSClient({ region: process.env.AWS_REGION || "af-south-1" });
+const ALERT_QUEUE_URL = process.env.ALERT_QUEUE_URL;
 
 const MONITORS_TABLE  = process.env.MONITORS_TABLE;
 const CHECKS_TABLE    = process.env.CHECKS_TABLE;
@@ -43,14 +46,22 @@ async function sendAlert(monitor, type, details) {
   // Send to the monitor owner's email if available, fallback to admin email
   const toAddress = monitor.alertEmail || ALERT_EMAIL;
 
-  await ses.send(new SendEmailCommand({
-    Source: ALERT_EMAIL,
-    Destination: { ToAddresses: [toAddress] },
-    Message: {
-      Subject: { Data: subject },
-      Body: { Text: { Data: body } },
-    },
-  }));
+  try {
+    await ses.send(new SendEmailCommand({
+      Source: ALERT_EMAIL,
+      Destination: { ToAddresses: [toAddress] },
+      Message: {
+        Subject: { Data: subject },
+        Body: { Text: { Data: body } },
+      },
+    }));
+  } catch (sesError) {
+    console.error(`SES failed for monitor ${monitor.id}, queuing alert for retry:`, sesError.message);
+    await sqs.send(new SendMessageCommand({
+      QueueUrl: ALERT_QUEUE_URL,
+      MessageBody: JSON.stringify({ monitor, type, details, subject, body, toAddress }),
+    }));
+  }
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -62,6 +73,7 @@ exports.handler = async () => {
   }));
 
   await Promise.all(monitors.map(async (monitor) => {
+    try {
     const { statusCode, responseTime, error } = await ping(monitor.url);
     const healthy   = statusCode >= 200 && statusCode < 400 && responseTime < LATENCY_THRESHOLD_MS;
     const timestamp = new Date().toISOString();
@@ -130,6 +142,9 @@ exports.handler = async () => {
         }));
         await sendAlert(monitor, "recovery", { statusCode, responseTime, duration: `${duration} minutes` });
       }
+    }
+    } catch (err) {
+      console.error(`Error processing monitor ${monitor.id} (${monitor.url}):`, err.message);
     }
   }));
 
