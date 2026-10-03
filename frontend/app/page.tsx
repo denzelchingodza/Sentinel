@@ -285,10 +285,10 @@ export default function Home() {
 
           {/* CTA — just the buttons */}
           <div data-reveal data-delay="0" style={{ borderTop: "1px solid var(--bd-faint)", marginTop: 64, paddingTop: 48, display: "flex", justifyContent: "center", gap: 12 }}>
-            <Link href="/auth" style={{ background: "#FF9900", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 6, padding: "11px 32px", textDecoration: "none" }}>
+            <Link href="/auth" className="btn-primary" style={{ background: "#FF9900", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 6, padding: "11px 32px", textDecoration: "none" }}>
               Create account
             </Link>
-            <Link href="/auth" style={{ background: "transparent", color: "var(--cs)", fontSize: 13, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "10px 28px", textDecoration: "none" }}>
+            <Link href="/auth" className="btn-ghost" style={{ background: "transparent", color: "var(--cs)", fontSize: 13, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "10px 28px", textDecoration: "none" }}>
               Sign in
             </Link>
           </div>
