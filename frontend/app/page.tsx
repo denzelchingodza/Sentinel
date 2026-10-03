@@ -93,20 +93,17 @@ export default function Home() {
         <main style={{ padding: "20px 48px 80px" }}>
 
           {/* HERO */}
-          <div style={{ paddingBottom: 72, maxWidth: 540 }}>
-            <div data-reveal data-delay="0"
-              style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#FF9900", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 16, height: 1, background: "#FF9900" }} />
-              Uptime monitoring
+          <div style={{ paddingBottom: 40, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40 }}>
+            <div>
+              <h1 data-reveal data-delay="0"
+                style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(36px, 5.5vw, 56px)", fontWeight: 400, lineHeight: 1.05, letterSpacing: "-0.01em", color: "#fff", margin: "0 0 16px" }}>
+                URL monitoring<br />on AWS.
+              </h1>
+              <p data-reveal data-delay="80"
+                style={{ ...BODY, fontSize: 14, maxWidth: 380, margin: 0 }}>
+                Checks your URLs every 60 seconds. Emails you when something goes down, and again when it recovers.
+              </p>
             </div>
-            <h1 data-reveal data-delay="80"
-              style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(30px, 5vw, 48px)", fontWeight: 400, lineHeight: 1.1, letterSpacing: "-0.01em", color: "#fff", margin: "0 0 18px" }}>
-              URL monitoring<br />on AWS.
-            </h1>
-            <p data-reveal data-delay="160"
-              style={{ ...BODY, maxWidth: 400, fontSize: 14 }}>
-              Checks your URLs every 60 seconds. Emails you when something goes down, and again when it recovers.
-            </p>
           </div>
 
           {/* STAGGERED CARD GRID */}
