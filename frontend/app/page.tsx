@@ -49,6 +49,16 @@ const BODY: React.CSSProperties = {
   lineHeight: 1.85,
 };
 
+const HEADING: React.CSSProperties = {
+  fontFamily: "'DM Serif Display', Georgia, serif",
+  fontSize: 22,
+  fontWeight: 400,
+  color: "#dce6f0",
+  letterSpacing: "-0.01em",
+  margin: "0 0 12px",
+  lineHeight: 1.2,
+};
+
 export default function Home() {
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -70,6 +80,7 @@ export default function Home() {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
         [data-reveal] {
           opacity: 0;
           transform: translateY(18px);
@@ -77,20 +88,21 @@ export default function Home() {
                       transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
         }
         [data-reveal].in { opacity: 1; transform: translateY(0); }
+        .ch { transition: border-color 0.2s ease; }
         .ch:hover { border-color: rgba(255,153,0,0.2) !important; }
       `}</style>
 
       <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
-        {/* Wordmark only — no nav buttons */}
+        {/* Wordmark — blends with app */}
         <div style={{ padding: "28px 40px", display: "flex", alignItems: "center", gap: 9 }}>
-          <ShieldIcon size={16} />
-          <span style={{ fontWeight: 700, fontSize: 14, color: "#dce6f0" }}>Sentinel</span>
+          <ShieldIcon size={15} />
+          <span style={{ fontWeight: 600, fontSize: 13, color: "#2e4a5e", letterSpacing: "0.02em" }}>Sentinel</span>
         </div>
 
-        <main style={{ maxWidth: 960, margin: "0 auto", padding: "32px 32px 80px" }}>
+        <main style={{ maxWidth: 960, margin: "0 auto", padding: "20px 32px 80px" }}>
 
-          {/* HERO */}
+          {/* HERO — no button */}
           <div style={{ paddingBottom: 72, maxWidth: 540 }}>
             <div data-reveal data-delay="0"
               style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#FF9900", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
@@ -98,18 +110,13 @@ export default function Home() {
               Uptime monitoring
             </div>
             <h1 data-reveal data-delay="80"
-              style={{ fontSize: "clamp(28px, 4.5vw, 44px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#fff", margin: "0 0 18px" }}>
+              style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(30px, 5vw, 48px)", fontWeight: 400, lineHeight: 1.1, letterSpacing: "-0.01em", color: "#fff", margin: "0 0 18px" }}>
               Know the second<br />your site goes down.
             </h1>
             <p data-reveal data-delay="160"
-              style={{ ...BODY, margin: "0 0 32px", maxWidth: 400, fontSize: 15 }}>
+              style={{ ...BODY, maxWidth: 400, fontSize: 14 }}>
               Sentinel checks your URLs every 60 seconds on AWS infrastructure and emails you the moment anything fails, and again when it recovers.
             </p>
-            <div data-reveal data-delay="240">
-              <Link href="/auth" style={{ background: "#FF9900", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 6, padding: "11px 26px", textDecoration: "none", display: "inline-block" }}>
-                Get started
-              </Link>
-            </div>
           </div>
 
           {/* STAGGERED CARD GRID */}
@@ -118,12 +125,9 @@ export default function Home() {
             {/* LEFT COLUMN */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-              {/* Card 1: Monitoring */}
-              <div data-reveal data-delay="0" className="ch" style={{ ...CARD, transition: "border-color 0.2s ease" }}>
+              <div data-reveal data-delay="0" className="ch" style={CARD}>
                 <div style={LABEL}>Monitoring</div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.2 }}>
-                  Your apps, checked<br />every 60 seconds.
-                </h2>
+                <h2 style={HEADING}>Your apps, checked<br />every 60 seconds.</h2>
                 <p style={BODY}>
                   Add a URL and EventBridge fires Lambda on a fixed schedule. If it goes down, SES alerts you with what failed and when. When it recovers, you hear about that too.
                 </p>
@@ -131,19 +135,16 @@ export default function Home() {
                   {[["60s", "interval"], ["24h", "history"], ["Email", "alerts"]].map(([val, lbl]) => (
                     <div key={lbl} style={{ flex: 1, borderRight: "1px solid rgba(255,255,255,0.04)" }}>
                       <div style={{ fontSize: 15, fontWeight: 700, color: "#FF9900" }}>{val}</div>
-                      <div style={{ fontSize: 10, color: "#2e4a5e", marginTop: 3, letterSpacing: "0.04em" }}>{lbl}</div>
+                      <div style={{ fontSize: 10, color: "#3d607a", marginTop: 3, letterSpacing: "0.04em" }}>{lbl}</div>
                     </div>
                   ))}
                   <div style={{ flex: 1 }} />
                 </div>
               </div>
 
-              {/* Card 3: Reliability */}
-              <div data-reveal data-delay="80" className="ch" style={{ ...CARD, transition: "border-color 0.2s ease" }}>
+              <div data-reveal data-delay="80" className="ch" style={CARD}>
                 <div style={LABEL}>Reliability</div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.2 }}>
-                  Fault-tolerant<br />by design.
-                </h2>
+                <h2 style={HEADING}>Fault-tolerant<br />by design.</h2>
                 <p style={BODY}>
                   Each monitor runs in its own error boundary. SES failures fall back to an SQS queue for retry. The Lambda has a dead letter queue. One broken URL cannot affect the rest.
                 </p>
@@ -159,15 +160,12 @@ export default function Home() {
 
             </div>
 
-            {/* RIGHT COLUMN — offset down */}
+            {/* RIGHT COLUMN — offset */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 56 }}>
 
-              {/* Card 2: Infrastructure */}
-              <div data-reveal data-delay="100" className="ch" style={{ ...CARD, transition: "border-color 0.2s ease" }}>
+              <div data-reveal data-delay="100" className="ch" style={CARD}>
                 <div style={LABEL}>Infrastructure</div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.2 }}>
-                  AWS.<br />End to end.
-                </h2>
+                <h2 style={HEADING}>AWS.<br />End to end.</h2>
                 <p style={BODY}>
                   Every component runs on Amazon Web Services in af-south-1. Compute, storage, auth, email. Provisioned with Terraform.
                 </p>
@@ -181,15 +179,12 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Card 4: AI / Intelligence */}
-              <div data-reveal data-delay="180" className="ch" style={{ ...CARD, borderColor: "rgba(74,158,255,0.08)", transition: "border-color 0.2s ease" }}>
+              <div data-reveal data-delay="180" className="ch" style={{ ...CARD, borderColor: "rgba(74,158,255,0.08)" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <div style={LABEL}>Intelligence</div>
                   <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", background: "rgba(74,158,255,0.07)", border: "1px solid rgba(74,158,255,0.14)", color: "#4a9eff", borderRadius: 20, padding: "3px 10px" }}>Coming soon</span>
                 </div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", margin: "0 0 10px", lineHeight: 1.2 }}>
-                  AI is coming<br />to Sentinel.
-                </h2>
+                <h2 style={HEADING}>AI is coming<br />to Sentinel.</h2>
                 <p style={{ ...BODY, marginBottom: 22 }}>
                   Monitoring tells you what happened. Intelligence will tell you why, and what is coming next.
                 </p>
@@ -202,7 +197,7 @@ export default function Home() {
                     <div key={f.title} style={{ display: "flex", gap: 12, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                       <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(74,158,255,0.4)", marginTop: 5, flexShrink: 0 }} />
                       <div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: "#6a8fa8", marginBottom: 2 }}>{f.title}</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "#5a7d96", marginBottom: 2 }}>{f.title}</div>
                         <div style={{ fontSize: 11, color: "#3d607a", lineHeight: 1.7 }}>{f.desc}</div>
                       </div>
                     </div>
@@ -213,20 +208,17 @@ export default function Home() {
             </div>
           </div>
 
-          {/* CTA */}
-          <div data-reveal data-delay="0" className="ch" style={{ ...CARD, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 32, padding: "30px 34px", marginTop: 14, transition: "border-color 0.2s ease" }}>
+          {/* CTA — blends as part of the page, not a boxed card */}
+          <div data-reveal data-delay="0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: 64, paddingTop: 52, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 40 }}>
             <div>
-              <div style={LABEL}>Get started</div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", margin: "0 0 6px" }}>
-                Your first monitor is one URL away.
-              </h2>
-              <p style={{ ...BODY, margin: 0 }}>Free to use. No card. Add a URL and you are live in under a minute.</p>
+              <h2 style={{ ...HEADING, fontSize: 26, margin: "0 0 10px" }}>Your first monitor is one URL away.</h2>
+              <p style={{ ...BODY, margin: 0 }}>Free. No card required. Add a URL and you are live in under a minute.</p>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
-              <Link href="/auth" style={{ background: "#FF9900", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 6, padding: "11px 28px", textDecoration: "none", whiteSpace: "nowrap", textAlign: "center" }}>
+            <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+              <Link href="/auth" style={{ background: "#FF9900", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 6, padding: "11px 26px", textDecoration: "none", whiteSpace: "nowrap" }}>
                 Create account
               </Link>
-              <Link href="/auth" style={{ background: "transparent", color: "#3d607a", fontSize: 12, border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, padding: "9px 28px", textDecoration: "none", textAlign: "center" }}>
+              <Link href="/auth" style={{ background: "transparent", color: "#3d607a", fontSize: 13, border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6, padding: "10px 22px", textDecoration: "none", whiteSpace: "nowrap" }}>
                 Sign in
               </Link>
             </div>
@@ -235,14 +227,11 @@ export default function Home() {
         </main>
 
         {/* FOOTER */}
-        <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "20px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <ShieldIcon size={13} />
-            <span style={{ fontSize: 11, color: "#1e3347", fontWeight: 600 }}>Sentinel</span>
-          </div>
+        <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "22px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <span style={{ fontSize: 11, color: "#3d607a" }}>2026 Denzel Chingodza</span>
           <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-            <Link href="/privacy" style={{ fontSize: 11, color: "#1e3347", textDecoration: "none" }}>Privacy</Link>
-            <span style={{ fontSize: 11, color: "#152230" }}>2026 Denzel Chingodza · Serverless · af-south-1</span>
+            <Link href="/privacy" style={{ fontSize: 11, color: "#3d607a", textDecoration: "none" }}>Privacy</Link>
+            <span style={{ fontSize: 11, color: "#2e4a5e" }}>Serverless · af-south-1</span>
           </div>
         </footer>
 
