@@ -7,16 +7,6 @@ import { getIdToken, signOut, getSession, deleteAccount } from "../../lib/cognit
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
-function ShieldIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-      <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-        stroke="#4a9eff" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(74,158,255,0.08)" />
-      <path d="M9 12l2 2 4-4" stroke="#4a9eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 interface Monitor {
   id: string;
   name: string;
@@ -54,7 +44,7 @@ function UptimeBar({ uptime }: { uptime: string }) {
   const color = pct >= 99 ? "#22c55e" : pct >= 95 ? "#f59e0b" : "#ef4444";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
-      <div style={{ width: 72, height: 3, background: "#2a2f38", borderRadius: 2, overflow: "hidden" }}>
+      <div style={{ width: 72, height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
         <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 2, transition: "width 0.5s ease" }} />
       </div>
       <span style={{ fontSize: 12, fontWeight: 600, color, minWidth: 40, textAlign: "right" }}>{uptime}%</span>
@@ -62,13 +52,23 @@ function UptimeBar({ uptime }: { uptime: string }) {
   );
 }
 
+const INPUT: React.CSSProperties = {
+  width: "100%",
+  background: "#06111e",
+  border: "1px solid rgba(255,255,255,0.06)",
+  borderRadius: 7,
+  color: "#dce6f0",
+  padding: "9px 12px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+};
+
 export default function Dashboard() {
   const router = useRouter();
   const [userEmail, setUserEmail]     = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  // Incrementing this triggers a data re-fetch (used after add/delete/manual refresh)
   const [refreshKey, setRefreshKey]   = useState(0);
-
   const [monitors, setMonitors]       = useState<Monitor[]>([]);
   const [analytics, setAnalytics]     = useState<Record<string, Analytics>>({});
   const [incidents, setIncidents]     = useState<Incident[]>([]);
@@ -84,7 +84,6 @@ export default function Dashboard() {
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
   const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
 
-  // ── Auth check ───────────────────────────────────────────────────────────────
   useEffect(() => {
     let active = true;
     getSession().then((session) => {
@@ -97,31 +96,20 @@ export default function Dashboard() {
     return () => { active = false; };
   }, [router]);
 
-  // ── Authenticated fetch helper ────────────────────────────────────────────────
   const authFetch = useCallback(async (url: string, opts: RequestInit = {}) => {
     const tok = await getIdToken();
     return fetch(url, {
       ...opts,
-      headers: {
-        "Content-Type": "application/json",
-        ...opts.headers,
-        Authorization: `Bearer ${tok}`,
-      },
+      headers: { "Content-Type": "application/json", ...opts.headers, Authorization: `Bearer ${tok}` },
     });
   }, []);
 
-  // Keep a stable ref so the interval callback always sees the latest authFetch
   const authFetchRef = useRef(authFetch);
   useEffect(() => { authFetchRef.current = authFetch; }, [authFetch]);
 
-  // ── Data fetching ─────────────────────────────────────────────────────────────
-  // Defining fetchAll inline inside the effect is the React-recommended pattern
-  // for async data loading — it avoids the cascading-render lint error and ensures
-  // all setState calls are batched into a single render at the end.
   useEffect(() => {
     if (!authChecked) return;
     let active = true;
-
     async function fetchAll() {
       const fetch_ = authFetchRef.current;
       try {
@@ -130,38 +118,26 @@ export default function Dashboard() {
           fetch_(`${API_BASE}/incidents`),
         ]);
         if (!active) return;
-        if (monRes.status === 401 || monRes.status === 403) {
-          signOut();
-          router.replace("/auth"); return;
-        }
+        if (monRes.status === 401 || monRes.status === 403) { signOut(); router.replace("/auth"); return; }
         if (!monRes.ok) throw new Error("API unreachable");
         const mons: Monitor[] = await monRes.json();
         const incs: Incident[] = incRes.ok ? await incRes.json() : [];
-
         const aMap: Record<string, Analytics> = {};
-        await Promise.all(
-          mons.map(async (m) => {
-            try {
-              const r = await fetch_(`${API_BASE}/monitors/${m.id}/analytics`);
-              if (r.ok) aMap[m.id] = await r.json();
-            } catch { /* ignore */ }
-          })
-        );
-
+        await Promise.all(mons.map(async (m) => {
+          try {
+            const r = await fetch_(`${API_BASE}/monitors/${m.id}/analytics`);
+            if (r.ok) aMap[m.id] = await r.json();
+          } catch { /* ignore */ }
+        }));
         if (!active) return;
-        // Single batch — one render, no flicker
-        setMonitors(mons);
-        setIncidents(incs);
-        setAnalytics(aMap);
-        setLastRefresh(new Date());
-        setError(null);
+        setMonitors(mons); setIncidents(incs); setAnalytics(aMap);
+        setLastRefresh(new Date()); setError(null);
       } catch (e: unknown) {
         if (active) setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
         if (active) setLoading(false);
       }
     }
-
     fetchAll();
     const t = setInterval(fetchAll, 30000);
     return () => { active = false; clearInterval(t); };
@@ -174,197 +150,178 @@ export default function Dashboard() {
     setFormLoading(true);
     try {
       const url = formUrl.startsWith("http") ? formUrl : `https://${formUrl}`;
-      await authFetch(`${API_BASE}/monitors`, {
-        method: "POST",
-        body: JSON.stringify({ name: formName, url }),
-      });
-      setFormName(""); setFormUrl(""); setShowForm(false);
-      refresh();
+      await authFetch(`${API_BASE}/monitors`, { method: "POST", body: JSON.stringify({ name: formName, url }) });
+      setFormName(""); setFormUrl(""); setShowForm(false); refresh();
     } catch { alert("Failed to add monitor"); }
     finally { setFormLoading(false); }
   };
 
   const deleteMonitor = async (id: string) => {
     await authFetch(`${API_BASE}/monitors/${id}`, { method: "DELETE" });
-    setConfirmDelete(null);
-    refresh();
+    setConfirmDelete(null); refresh();
   };
 
-  const handleSignOut = () => {
-    signOut();
-    router.replace("/auth");
-  };
+  const handleSignOut = () => { signOut(); router.replace("/auth"); };
 
   const handleDeleteAccount = async () => {
-    setDeleteAccountLoading(true);
-    setDeleteAccountError(null);
+    setDeleteAccountLoading(true); setDeleteAccountError(null);
     try {
-      await deleteAccount();
-      signOut();
-      router.replace("/auth");
+      await deleteAccount(); signOut(); router.replace("/auth");
     } catch (err: unknown) {
       setDeleteAccountError(err instanceof Error ? err.message : "Failed to delete account.");
       setDeleteAccountLoading(false);
     }
   };
 
-  // Stay blank until BOTH auth is confirmed AND the first data load is complete.
-  // This means the dashboard renders exactly once — fully populated — with no flicker.
   if (!authChecked || loading) {
-    return <div style={{ minHeight: "100vh", background: "#181b21" }} />;
+    return <div style={{ minHeight: "100vh", background: "#080f1a" }} />;
   }
 
-  const upCount    = monitors.filter((m) => m.lastStatus === "up").length;
-  const downCount  = monitors.filter((m) => m.lastStatus === "down").length;
-  const avgUptime  = monitors.length === 0 ? null :
+  const upCount   = monitors.filter((m) => m.lastStatus === "up").length;
+  const downCount = monitors.filter((m) => m.lastStatus === "down").length;
+  const avgUptime = monitors.length === 0 ? null :
     (monitors.reduce((s, m) => s + (analytics[m.id] ? parseFloat(analytics[m.id].uptime) : 100), 0) / monitors.length).toFixed(1);
   const respondingMonitors = monitors.filter(m => m.lastResponseTime);
   const avgMs = respondingMonitors.length > 0
     ? Math.round(respondingMonitors.reduce((s, m) => s + (m.lastResponseTime || 0), 0) / respondingMonitors.length)
     : null;
+  const activeIncidents = incidents.filter(inc => monitors.some(m => m.id === inc.monitorId));
 
   return (
-    <div style={{ minHeight: "100vh", background: "#181b21", color: "#c9d1d9" }}>
+    <>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');`}</style>
+      <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
-      {/* Nav */}
-      <nav style={{ background: "#14161c", borderBottom: "1px solid #2a2f38", padding: "0 28px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {/* Nav */}
+        <nav style={{ background: "#050b14", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <ShieldIcon size={18} />
-            <span style={{ fontWeight: 700, fontSize: 15, color: "#e6edf3" }}>Sentinel</span>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+                stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+              <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
           </Link>
-          <div style={{ width: 1, height: 16, background: "#2a2f38" }} />
-          <span style={{ fontSize: 13, color: "#3d4450" }}>Dashboard</span>
-        </div>
-        <div className="nav-actions" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {userEmail && (
-            <span className="nav-email" style={{ fontSize: 12, color: "#4d5562", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</span>
-          )}
-          <span className="nav-email" style={{ fontSize: 12, color: "#3d4450" }}>{timeAgo(lastRefresh.toISOString())}</span>
-          <button onClick={refresh}
-            style={{ background: "#1e2228", border: "1px solid #2a2f38", color: "#6e7681", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
-            ↻
-          </button>
-          <button onClick={() => setShowForm((v) => !v)}
-            style={{ background: showForm ? "#1e2228" : "#4a9eff", border: showForm ? "1px solid #2a2f38" : "none", color: showForm ? "#6e7681" : "#fff", padding: "5px 14px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
-            {showForm ? "Cancel" : "+ Monitor"}
-          </button>
-          <button onClick={() => { setShowDeleteAccount(true); setDeleteAccountError(null); }}
-            style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
-            Delete account
-          </button>
-          <button onClick={handleSignOut}
-            style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
-            Sign out
-          </button>
-        </div>
-      </nav>
-
-      <main className="dash-padding" style={{ maxWidth: 960, margin: "0 auto", padding: "24px" }}>
-
-        {error && (
-          <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "10px 14px 10px 16px", marginBottom: 16, color: "#8b949e", fontSize: 13 }}>
-            {error}
-          </div>
-        )}
-
-        {/* Incidents */}
-        {incidents.filter(inc => monitors.some(m => m.id === inc.monitorId)).length > 0 && (
-          <div style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.22)", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#ef4444", animation: "pulse 1.5s ease infinite" }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#f87171", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                {incidents.filter(inc => monitors.some(m => m.id === inc.monitorId)).length} active incident{incidents.length > 1 ? "s" : ""}
-              </span>
-            </div>
-            {incidents.filter(inc => monitors.some(m => m.id === inc.monitorId)).map((inc) => {
-              const mon = monitors.find((m) => m.id === inc.monitorId);
-              return (
-                <div key={inc.id} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderTop: "1px solid rgba(239,68,68,0.15)", fontSize: 13 }}>
-                  <span style={{ color: "#fca5a5", fontWeight: 500 }}>{mon?.name || inc.url}</span>
-                  <span style={{ color: "#4d5562" }}>since {timeAgo(inc.startTime)}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Add form */}
-        {showForm && (
-          <div style={{ background: "#1e2228", border: "1px solid #2a2f38", borderRadius: 10, padding: "16px 18px", marginBottom: 16, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
-            <div style={{ flex: "1 1 130px" }}>
-              <label style={{ fontSize: 10, color: "#3d4450", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.08em" }}>Name</label>
-              <input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="My API"
-                style={{ width: "100%", background: "#14161c", border: "1px solid #2a2f38", borderRadius: 6, color: "#e6edf3", padding: "8px 11px", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
-            </div>
-            <div style={{ flex: "2 1 200px" }}>
-              <label style={{ fontSize: 10, color: "#3d4450", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.08em" }}>URL</label>
-              <input value={formUrl} onChange={(e) => setFormUrl(e.target.value)} placeholder="https://example.com"
-                onKeyDown={(e) => e.key === "Enter" && addMonitor()}
-                style={{ width: "100%", background: "#14161c", border: "1px solid #2a2f38", borderRadius: 6, color: "#e6edf3", padding: "8px 11px", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
-            </div>
-            <button onClick={addMonitor} disabled={formLoading}
-              style={{ background: "#4a9eff", border: "none", color: "#fff", padding: "9px 20px", borderRadius: 7, cursor: formLoading ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 600, opacity: formLoading ? 0.6 : 1 }}>
-              {formLoading ? "Adding…" : "Add"}
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            {userEmail && <span style={{ fontSize: 11, color: "#3d607a", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</span>}
+            <span style={{ fontSize: 11, color: "#2e4a5e" }}>{timeAgo(lastRefresh.toISOString())}</span>
+            <button onClick={refresh}
+              style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#4a6a80", width: 30, height: 30, borderRadius: 6, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              ↻
+            </button>
+            <button onClick={() => setShowForm((v) => !v)}
+              style={{ background: showForm ? "transparent" : "#FF9900", border: showForm ? "1px solid rgba(255,255,255,0.06)" : "none", color: showForm ? "#4a6a80" : "#000", padding: "6px 16px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+              {showForm ? "Cancel" : "+ Monitor"}
+            </button>
+            <button onClick={handleSignOut}
+              style={{ background: "transparent", border: "none", color: "#3d607a", cursor: "pointer", fontSize: 12, padding: "6px 8px" }}>
+              Sign out
             </button>
           </div>
-        )}
+        </nav>
 
-        {/* Stat cards */}
-        <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
-          {[
-            { label: "Total",        value: loading ? "—" : monitors.length,            color: undefined,                                          accent: "#2a2f38" },
-            { label: "Online",       value: loading ? "—" : upCount,                    color: upCount > 0 && !loading ? "#22c55e" : undefined,     accent: upCount > 0 && !loading ? "rgba(34,197,94,0.45)" : "#2a2f38" },
-            { label: "Down",         value: loading ? "—" : downCount,                  color: downCount > 0 ? "#ef4444" : undefined,               accent: downCount > 0 ? "rgba(239,68,68,0.45)" : "#2a2f38" },
-            { label: "Avg response", value: loading ? "—" : avgMs ? `${avgMs}ms` : "—", color: undefined,                                          accent: "#2a2f38" },
-          ].map((c) => (
-            <div key={c.label} style={{ background: "#1e2228", border: "1px solid #2a2f38", borderLeft: `2px solid ${c.accent}`, borderRadius: 10, padding: "16px 18px" }}>
-              <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{c.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: c.color || "#e6edf3", letterSpacing: "-0.02em" }}>{c.value}</div>
+        <main style={{ padding: "28px 48px 80px" }}>
+
+          {/* Error banner */}
+          {error && (
+            <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "10px 14px 10px 16px", marginBottom: 20, color: "#8b949e", fontSize: 13 }}>
+              {error}
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* Monitor list */}
-        {loading ? (
-          <div style={{ textAlign: "center", color: "#3d4450", padding: "60px 0", fontSize: 14 }}>Loading…</div>
-        ) : monitors.length === 0 ? (
-          <div style={{ background: "#1e2228", border: "1px dashed #2a2f38", borderRadius: 10, padding: "56px 24px", textAlign: "center", color: "#3d4450", fontSize: 14 }}>
-            No monitors yet — add one to get started.
+          {/* Active incidents */}
+          {activeIncidents.length > 0 && (
+            <div style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.18)", borderRadius: 10, padding: "14px 18px", marginBottom: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444" }} />
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#f87171", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  {activeIncidents.length} active incident{activeIncidents.length > 1 ? "s" : ""}
+                </span>
+              </div>
+              {activeIncidents.map((inc) => {
+                const mon = monitors.find((m) => m.id === inc.monitorId);
+                return (
+                  <div key={inc.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderTop: "1px solid rgba(239,68,68,0.1)", fontSize: 13 }}>
+                    <span style={{ color: "#fca5a5", fontWeight: 500 }}>{mon?.name || inc.url}</span>
+                    <span style={{ color: "#4a6a80" }}>since {timeAgo(inc.startTime)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Add monitor form */}
+          {showForm && (
+            <div style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "20px 22px", marginBottom: 20, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <div style={{ flex: "1 1 140px" }}>
+                <label style={{ fontSize: 9, color: "#4a6a80", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>Name</label>
+                <input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="My API" style={INPUT} />
+              </div>
+              <div style={{ flex: "2 1 220px" }}>
+                <label style={{ fontSize: 9, color: "#4a6a80", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>URL</label>
+                <input value={formUrl} onChange={(e) => setFormUrl(e.target.value)} placeholder="https://example.com"
+                  onKeyDown={(e) => e.key === "Enter" && addMonitor()} style={INPUT} />
+              </div>
+              <button onClick={addMonitor} disabled={formLoading}
+                style={{ background: "#FF9900", border: "none", color: "#000", padding: "9px 22px", borderRadius: 7, cursor: formLoading ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: formLoading ? 0.6 : 1 }}>
+                {formLoading ? "Adding..." : "Add"}
+              </button>
+            </div>
+          )}
+
+          {/* Stat cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 20 }}>
+            {[
+              { label: "Total",        value: monitors.length,                          accent: "rgba(255,255,255,0.06)", color: "#dce6f0" },
+              { label: "Online",       value: upCount,                                  accent: upCount > 0 ? "rgba(34,197,94,0.4)" : "rgba(255,255,255,0.06)", color: upCount > 0 ? "#22c55e" : "#dce6f0" },
+              { label: "Down",         value: downCount,                                accent: downCount > 0 ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.06)", color: downCount > 0 ? "#ef4444" : "#dce6f0" },
+              { label: "Avg response", value: avgMs ? `${avgMs}ms` : "—",              accent: "rgba(255,255,255,0.06)", color: "#dce6f0" },
+            ].map((c) => (
+              <div key={c.label} style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderLeft: `2px solid ${c.accent}`, borderRadius: 12, padding: "18px 20px" }}>
+                <div style={{ fontSize: 9, color: "#4a6a80", textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700, marginBottom: 10 }}>{c.label}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: c.color, letterSpacing: "-0.02em" }}>{c.value}</div>
+              </div>
+            ))}
           </div>
-        ) : (
-          <>
-            {/* Desktop table */}
-            <div className="mon-desktop">
-              <div style={{ display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto", alignItems: "center", gap: "0 14px", padding: "6px 16px", marginBottom: 4 }}>
+
+          {/* Monitor list */}
+          {monitors.length === 0 ? (
+            <div style={{ background: "#0c1520", border: "1px dashed rgba(255,255,255,0.06)", borderRadius: 12, padding: "60px 24px", textAlign: "center", color: "#4a6a80", fontSize: 14 }}>
+              No monitors yet. Add one to get started.
+            </div>
+          ) : (
+            <>
+              {/* Column headers */}
+              <div style={{ display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto", alignItems: "center", gap: "0 16px", padding: "6px 18px", marginBottom: 6 }}>
                 {["", "Monitor", "Uptime (24h)", "Response", "Status", "Checked", ""].map((h, i) => (
-                  <span key={i} style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", textAlign: i >= 2 ? "right" : "left" }}>{h}</span>
+                  <span key={i} style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700, textAlign: i >= 2 ? "right" : "left" }}>{h}</span>
                 ))}
               </div>
+
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {monitors.map((m) => {
                   const a = analytics[m.id];
                   const isUp   = m.lastStatus === "up";
                   const isDown = m.lastStatus === "down";
-                  const msColor = !m.lastResponseTime ? "#4d5562"
+                  const msColor = !m.lastResponseTime ? "#4a6a80"
                     : m.lastResponseTime < 500  ? "#22c55e"
                     : m.lastResponseTime < 2000 ? "#f59e0b"
                     : "#ef4444";
                   return (
                     <div key={m.id} style={{
-                      background: "#1e2228",
-                      border: `1px solid ${isDown ? "rgba(239,68,68,0.3)" : "#2a2f38"}`,
-                      borderRadius: 9, padding: "13px 16px",
-                      display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto",
-                      alignItems: "center", gap: "0 14px",
+                      background: "#0c1520",
+                      border: `1px solid ${isDown ? "rgba(239,68,68,0.25)" : "rgba(255,255,255,0.05)"}`,
+                      borderRadius: 10, padding: "14px 18px",
+                      display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto",
+                      alignItems: "center", gap: "0 16px",
                     }}>
-                      <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38", flexShrink: 0 }} />
+                      <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "rgba(255,255,255,0.08)", flexShrink: 0 }} />
                       <div style={{ overflow: "hidden" }}>
-                        <div style={{ fontWeight: 600, fontSize: 14, color: "#e6edf3", marginBottom: 1 }}>{m.name}</div>
-                        <div style={{ fontSize: 11, color: "#3d4450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: "#dce6f0", marginBottom: 2 }}>{m.name}</div>
+                        <div style={{ fontSize: 11, color: "#3d607a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
                       </div>
                       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d4450" }}>—</span>}
+                        {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d607a" }}>—</span>}
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <span style={{ fontSize: 14, fontWeight: 600, color: msColor }}>
@@ -372,11 +329,11 @@ export default function Dashboard() {
                         </span>
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#3d4450" }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#3d607a" }}>
                           {m.lastStatus}
                         </span>
                       </div>
-                      <div style={{ textAlign: "right", fontSize: 11, color: "#3d4450" }}>{timeAgo(m.lastChecked)}</div>
+                      <div style={{ textAlign: "right", fontSize: 11, color: "#3d607a" }}>{timeAgo(m.lastChecked)}</div>
                       {confirmDelete === m.id ? (
                         <div style={{ display: "flex", gap: 4 }}>
                           <button onClick={() => deleteMonitor(m.id)}
@@ -384,13 +341,13 @@ export default function Dashboard() {
                             Remove
                           </button>
                           <button onClick={() => setConfirmDelete(null)}
-                            style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
+                            style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#4a6a80", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
                             No
                           </button>
                         </div>
                       ) : (
                         <button onClick={() => setConfirmDelete(m.id)}
-                          style={{ background: "transparent", border: "1px solid #2a2f38", color: "#3d4450", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#3d607a", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
                           ✕
                         </button>
                       )}
@@ -398,107 +355,53 @@ export default function Dashboard() {
                   );
                 })}
               </div>
-            </div>
 
-            {/* Mobile cards */}
-            <div className="mon-mobile" style={{ display: "none", flexDirection: "column", gap: 8 }}>
-              {monitors.map((m) => {
-                const a = analytics[m.id];
-                const isUp   = m.lastStatus === "up";
-                const isDown = m.lastStatus === "down";
-                const msColor = !m.lastResponseTime ? "#4d5562"
-                  : m.lastResponseTime < 500  ? "#22c55e"
-                  : m.lastResponseTime < 2000 ? "#f59e0b"
-                  : "#ef4444";
-                return (
-                  <div key={m.id} style={{
-                    background: "#1e2228",
-                    border: `1px solid ${isDown ? "rgba(239,68,68,0.3)" : "#2a2f38"}`,
-                    borderRadius: 10, padding: "14px 16px",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38", flexShrink: 0 }} />
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: 14, color: "#e6edf3" }}>{m.name}</div>
-                          <div style={{ fontSize: 11, color: "#3d4450" }}>{m.url}</div>
-                        </div>
-                      </div>
-                      {confirmDelete === m.id ? (
-                        <div style={{ display: "flex", gap: 4 }}>
-                          <button onClick={() => deleteMonitor(m.id)}
-                            style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#9b7070", padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
-                            Remove
-                          </button>
-                          <button onClick={() => setConfirmDelete(null)}
-                            style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "4px 8px", borderRadius: 5, cursor: "pointer", fontSize: 12 }}>
-                            No
-                          </button>
-                        </div>
-                      ) : (
-                        <button onClick={() => setConfirmDelete(m.id)}
-                          style={{ background: "transparent", border: "1px solid #2a2f38", color: "#3d4450", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 10, borderTop: "1px solid #2a2f38" }}>
-                      <div>
-                        <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Uptime</div>
-                        {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d4450" }}>—</span>}
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Response</div>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: msColor }}>
-                          {m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}
-                        </span>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Checked</div>
-                        <span style={{ fontSize: 12, color: "#4d5562" }}>{timeAgo(m.lastChecked)}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+              {avgUptime && (
+                <div style={{ marginTop: 10, padding: "10px 18px", background: "#0c1520", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 8, display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 12, color: "#3d607a" }}>{monitors.length} monitor{monitors.length !== 1 ? "s" : ""} · checks every 60s</span>
+                  <span style={{ fontSize: 12, color: "#3d607a" }}>avg uptime <span style={{ color: "#22c55e", fontWeight: 600 }}>{avgUptime}%</span></span>
+                </div>
+              )}
+            </>
+          )}
 
-            {avgUptime && (
-              <div style={{ marginTop: 10, padding: "10px 16px", background: "#14161c", border: "1px solid #2a2f38", borderRadius: 8, display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 12, color: "#3d4450" }}>{monitors.length} monitor{monitors.length !== 1 ? "s" : ""} · checks every 60s</span>
-                <span style={{ fontSize: 12, color: "#3d4450" }}>avg uptime <span style={{ color: "#22c55e", fontWeight: 600 }}>{avgUptime}%</span></span>
+          {/* Delete account — tucked at the bottom */}
+          <div style={{ marginTop: 64, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+            <button onClick={() => { setShowDeleteAccount(true); setDeleteAccountError(null); }}
+              style={{ background: "none", border: "none", color: "#2e4a5e", cursor: "pointer", fontSize: 12, padding: 0 }}>
+              Delete account
+            </button>
+          </div>
+
+        </main>
+
+        {/* Delete account modal */}
+        {showDeleteAccount && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }}>
+            <div style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "28px", maxWidth: 400, width: "100%" }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#dce6f0", marginBottom: 8 }}>Delete account?</h3>
+              <p style={{ fontSize: 13, color: "#6a8fa8", lineHeight: 1.7, marginBottom: 20 }}>
+                This permanently deletes your account and all monitors. It cannot be undone.
+              </p>
+              {deleteAccountError && (
+                <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
+                  {deleteAccountError}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setShowDeleteAccount(false)} disabled={deleteAccountLoading}
+                  style={{ flex: 1, background: "#FF9900", border: "none", color: "#000", padding: "10px", borderRadius: 7, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+                  Cancel
+                </button>
+                <button onClick={handleDeleteAccount} disabled={deleteAccountLoading}
+                  style={{ flex: 1, background: "transparent", border: "none", color: "#6b4444", padding: "10px", borderRadius: 7, cursor: deleteAccountLoading ? "not-allowed" : "pointer", fontSize: 13, opacity: deleteAccountLoading ? 0.5 : 1 }}>
+                  {deleteAccountLoading ? "Deleting..." : "Delete account"}
+                </button>
               </div>
-            )}
-          </>
-        )}
-      </main>
-
-      {/* Delete account modal */}
-      {showDeleteAccount && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }}>
-          <div style={{ background: "#1e2228", border: "1px solid #2a2f38", borderRadius: 12, padding: "28px", maxWidth: 400, width: "100%" }}>
-            <h3 style={{ fontSize: 17, fontWeight: 700, color: "#e6edf3", marginBottom: 8 }}>Delete account?</h3>
-            <p style={{ fontSize: 13, color: "#4d5562", lineHeight: 1.6, marginBottom: 20 }}>
-              This will permanently delete your account and all your monitors. This cannot be undone.
-            </p>
-            {deleteAccountError && (
-              <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
-                {deleteAccountError}
-              </div>
-            )}
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setShowDeleteAccount(false)} disabled={deleteAccountLoading}
-                style={{ flex: 1, background: "#4a9eff", border: "none", color: "#fff", padding: "10px", borderRadius: 7, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
-                Cancel
-              </button>
-              <button onClick={handleDeleteAccount} disabled={deleteAccountLoading}
-                style={{ flex: 1, background: "transparent", border: "none", color: "#6b4444", padding: "10px", borderRadius: 7, cursor: deleteAccountLoading ? "not-allowed" : "pointer", fontSize: 13, opacity: deleteAccountLoading ? 0.5 : 1 }}>
-                {deleteAccountLoading ? "Deleting…" : "Delete account"}
-              </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
