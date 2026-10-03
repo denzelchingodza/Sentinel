@@ -16,15 +16,20 @@ function ShieldIcon() {
 
 function AwsMark() {
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, lineHeight: 0, position: "relative" }}>
-      <span style={{ fontSize: 10, color: "var(--cs)", letterSpacing: "0.06em", fontWeight: 400 }}>Powered by</span>
-      <span style={{ display: "inline-block", lineHeight: 0, position: "relative", width: 68, height: 40 }}>
-        <img src="/aws-logo-dark.svg" alt="AWS" width={68} height={40}
-          className="aws-badge-dark" style={{ display: "block" }} />
-        <img src="/aws-logo-light.svg" alt="" aria-hidden width={68} height={40}
-          className="aws-badge-light" style={{ position: "absolute", inset: 0 }} />
-      </span>
-    </span>
+    <div style={{
+      borderRadius: 12,
+      background: "#0d1a26",
+      backgroundImage: "radial-gradient(ellipse 60% 55% at 50% 60%, rgba(255,153,0,0.22) 0%, rgba(255,153,0,0.06) 50%, transparent 100%)",
+      padding: "28px 24px 22px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 4,
+      border: "1px solid rgba(255,153,0,0.12)",
+    }}>
+      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", letterSpacing: "0.12em", fontWeight: 400, textTransform: "uppercase" }}>Powered by</span>
+      <img src="/aws-logo-dark.svg" alt="AWS" width={96} height={56} style={{ display: "block" }} />
+    </div>
   );
 }
 
@@ -242,7 +247,7 @@ export default function Home() {
                 <p style={BODY}>
                   Every component runs on Amazon Web Services in af-south-1. Compute, storage, auth, email. Provisioned with Terraform.
                 </p>
-                <div style={{ margin: "18px 0" }}>
+                <div style={{ margin: "20px 0 16px" }}>
                   <AwsMark />
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
