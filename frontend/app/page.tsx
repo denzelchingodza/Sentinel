@@ -101,11 +101,11 @@ export default function Home() {
             </div>
             <h1 data-reveal data-delay="80"
               style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(30px, 5vw, 48px)", fontWeight: 400, lineHeight: 1.1, letterSpacing: "-0.01em", color: "#fff", margin: "0 0 18px" }}>
-              Know the second<br />your site goes down.
+              URL monitoring<br />on AWS.
             </h1>
             <p data-reveal data-delay="160"
               style={{ ...BODY, maxWidth: 400, fontSize: 14 }}>
-              Sentinel checks your URLs every 60 seconds on AWS infrastructure and emails you the moment anything fails, and again when it recovers.
+              Checks your URLs every 60 seconds. Emails you when something goes down, and again when it recovers.
             </p>
           </div>
 
