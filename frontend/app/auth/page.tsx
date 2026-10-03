@@ -10,16 +10,6 @@ import {
 
 type Screen = "signin" | "signup" | "confirm" | "forgot" | "reset";
 
-function ShieldIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-        stroke="#4a9eff" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(74,158,255,0.08)" />
-      <path d="M9 12l2 2 4-4" stroke="#4a9eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "#06111e",
@@ -64,20 +54,15 @@ export default function AuthPage() {
   const [resetCode, setResetCode]     = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading]         = useState(false);
-  const [redirecting, setRedirecting] = useState(false); // hides UI during navigation
+  const [redirecting, setRedirecting] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const [info, setInfo]               = useState<string | null>(null);
 
-  // If already logged in, redirect immediately and stay blank
   useEffect(() => {
     getSession().then((s) => {
-      if (s) {
-        setRedirecting(true);
-        router.replace("/dashboard");
-      } else {
-        setSessionChecked(true);
-      }
+      if (s) { setRedirecting(true); router.replace("/dashboard"); }
+      else setSessionChecked(true);
     });
   }, [router]);
 
@@ -109,26 +94,19 @@ export default function AuthPage() {
     setLoading(true); setError(null);
     try {
       await signIn(email, password);
-      // Blank the page immediately — no flash between auth and dashboard
       setRedirecting(true);
       router.replace("/dashboard");
-    } catch (err) {
-      setError(friendlyError(err));
-      setLoading(false);
-    }
+    } catch (err) { setError(friendlyError(err)); setLoading(false); }
   }
 
   async function handleSignUp() {
     setLoading(true); setError(null);
     try {
       await signUp(email, password);
-      setInfo("Check your inbox — we sent a 6-digit verification code.");
+      setInfo("Check your inbox for a 6-digit verification code.");
       setScreen("confirm");
-    } catch (err) {
-      setError(friendlyError(err));
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(friendlyError(err)); }
+    finally { setLoading(false); }
   }
 
   async function handleConfirm() {
@@ -138,10 +116,7 @@ export default function AuthPage() {
       await signIn(email, password);
       setRedirecting(true);
       router.replace("/dashboard");
-    } catch (err) {
-      setError(friendlyError(err));
-      setLoading(false);
-    }
+    } catch (err) { setError(friendlyError(err)); setLoading(false); }
   }
 
   async function handleForgot() {
@@ -150,77 +125,77 @@ export default function AuthPage() {
       await forgotPassword(email);
       setInfo(`Reset code sent to ${email}`);
       setScreen("reset");
-    } catch (err) {
-      setError(friendlyError(err));
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(friendlyError(err)); }
+    finally { setLoading(false); }
   }
 
   async function handleReset() {
     setLoading(true); setError(null);
     try {
       await confirmForgotPassword(email, resetCode, newPassword);
-      setInfo("Password updated. Signing you in…");
       await signIn(email, newPassword);
       setRedirecting(true);
       router.replace("/dashboard");
-    } catch (err) {
-      setError(friendlyError(err));
-      setLoading(false);
-    }
+    } catch (err) { setError(friendlyError(err)); setLoading(false); }
   }
 
   const onKey = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === "Enter") action();
   };
 
-  // Blank screen while navigating or waiting for session check — prevents any flash
   if (redirecting || !sessionChecked) {
     return <div style={{ minHeight: "100vh", background: "#080f1a" }} />;
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#080f1a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "system-ui, -apple-system, sans-serif" }}>
-      <div style={{ width: "100%", maxWidth: 380 }}>
+    <div style={{ minHeight: "100vh", background: "#080f1a", display: "grid", gridTemplateColumns: "1fr 1fr", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32, justifyContent: "center" }}>
-          <ShieldIcon />
-          <span style={{ fontWeight: 700, fontSize: 20, color: "#e8edf2" }}>Sentinel</span>
+      {/* LEFT — context */}
+      <div style={{ padding: "48px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid rgba(255,255,255,0.04)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+              stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+            <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
         </div>
 
-        {/* Card */}
-        <div style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.05)", borderTop: "1px solid rgba(255,153,0,0.15)", borderRadius: 14, padding: "28px 28px 24px" }}>
+        <div>
+          <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(28px, 3.5vw, 42px)", fontWeight: 400, color: "#dce6f0", lineHeight: 1.15, letterSpacing: "-0.01em", margin: "0 0 16px" }}>
+            URL monitoring<br />on AWS.
+          </h1>
+          <p style={{ fontSize: 13, color: "#3d607a", lineHeight: 1.8, margin: 0, maxWidth: 320 }}>
+            Checks your URLs every 60 seconds. Emails you when something goes down, and again when it recovers.
+          </p>
+        </div>
 
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e8edf2", marginBottom: 4 }}>
-            {screen === "signin"  ? "Sign in"             :
-             screen === "signup"  ? "Create account"      :
-             screen === "confirm" ? "Verify your email"   :
-             screen === "forgot"  ? "Reset password"      :
+        <span style={{ fontSize: 11, color: "#1e3347" }}>af-south-1 · Serverless</span>
+      </div>
+
+      {/* RIGHT — form */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "48px" }}>
+        <div style={{ width: "100%", maxWidth: 360 }}>
+
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: "#dce6f0", marginBottom: 24 }}>
+            {screen === "signin"  ? "Sign in"           :
+             screen === "signup"  ? "Create account"    :
+             screen === "confirm" ? "Verify your email" :
+             screen === "forgot"  ? "Reset password"    :
                                     "Set new password"}
           </h2>
-          <p style={{ fontSize: 13, color: "#1e3347", marginBottom: 24 }}>
-            {screen === "signin"  ? "Welcome back."                              :
-             screen === "signup"  ? "Get started — it's free."                  :
-             screen === "confirm" ? `Code sent to ${email}`                     :
-             screen === "forgot"  ? "Enter your email and we'll send a code."   :
-                                    `Code sent to ${email}`}
-          </p>
 
           {error && (
             <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
               {error}
             </div>
           )}
-
           {info && (
-            <div style={{ borderLeft: "2px solid rgba(74,158,255,0.45)", background: "rgba(74,158,255,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
+            <div style={{ borderLeft: "2px solid rgba(74,158,255,0.35)", background: "rgba(74,158,255,0.03)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
               {info}
             </div>
           )}
 
-          {/* ── Sign in ── */}
           {screen === "signin" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -233,8 +208,8 @@ export default function AuthPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
                   <label style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
                   <button onClick={() => { setScreen("forgot"); setError(null); setInfo(null); }}
-                    style={{ background: "none", border: "none", color: "#FF9900", cursor: "pointer", fontSize: 12, padding: 0, opacity: 0.7 }}>
-                    Forgot password?
+                    style={{ background: "none", border: "none", color: "#3d607a", cursor: "pointer", fontSize: 11, padding: 0 }}>
+                    Forgot?
                   </button>
                 </div>
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
@@ -243,12 +218,11 @@ export default function AuthPage() {
               </div>
               <button onClick={handleSignIn} disabled={loading}
                 style={{ ...btnPrimary, opacity: loading ? 0.6 : 1, cursor: loading ? "not-allowed" : "pointer" }}>
-                {loading ? "Signing in…" : "Sign in"}
+                {loading ? "Signing in..." : "Sign in"}
               </button>
             </div>
           )}
 
-          {/* ── Sign up ── */}
           {screen === "signup" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -265,12 +239,11 @@ export default function AuthPage() {
               </div>
               <button onClick={handleSignUp} disabled={loading}
                 style={{ ...btnPrimary, opacity: loading ? 0.6 : 1, cursor: loading ? "not-allowed" : "pointer" }}>
-                {loading ? "Creating account…" : "Create account"}
+                {loading ? "Creating account..." : "Create account"}
               </button>
             </div>
           )}
 
-          {/* ── Confirm email ── */}
           {screen === "confirm" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -281,12 +254,11 @@ export default function AuthPage() {
               </div>
               <button onClick={handleConfirm} disabled={loading}
                 style={{ ...btnPrimary, opacity: loading ? 0.6 : 1, cursor: loading ? "not-allowed" : "pointer" }}>
-                {loading ? "Verifying…" : "Verify & sign in"}
+                {loading ? "Verifying..." : "Verify & sign in"}
               </button>
             </div>
           )}
 
-          {/* ── Forgot password — enter email ── */}
           {screen === "forgot" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -297,16 +269,15 @@ export default function AuthPage() {
               </div>
               <button onClick={handleForgot} disabled={loading}
                 style={{ ...btnPrimary, opacity: loading ? 0.6 : 1, cursor: loading ? "not-allowed" : "pointer" }}>
-                {loading ? "Sending…" : "Send reset code"}
+                {loading ? "Sending..." : "Send reset code"}
               </button>
               <button onClick={() => { setScreen("signin"); setError(null); setInfo(null); }}
-                style={{ background: "transparent", border: "none", color: "#1e3347", cursor: "pointer", fontSize: 13, marginTop: 2 }}>
-                ← Back to sign in
+                style={{ background: "transparent", border: "none", color: "#2e4a5e", cursor: "pointer", fontSize: 12, marginTop: 2 }}>
+                Back to sign in
               </button>
             </div>
           )}
 
-          {/* ── Reset password — enter code + new password ── */}
           {screen === "reset" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -323,24 +294,26 @@ export default function AuthPage() {
               </div>
               <button onClick={handleReset} disabled={loading}
                 style={{ ...btnPrimary, opacity: loading ? 0.6 : 1, cursor: loading ? "not-allowed" : "pointer" }}>
-                {loading ? "Resetting…" : "Set new password"}
+                {loading ? "Resetting..." : "Set new password"}
               </button>
             </div>
           )}
-        </div>
 
-        {/* Toggle sign in / sign up */}
-        {(screen === "signin" || screen === "signup") && (
-          <p style={{ textAlign: "center", fontSize: 13, color: "#1e3347", marginTop: 18 }}>
-            {screen === "signin" ? "Don't have an account? " : "Already have an account? "}
-            <button
-              onClick={() => { setScreen(screen === "signin" ? "signup" : "signin"); setError(null); setInfo(null); }}
-              style={{ background: "none", border: "none", color: "#FF9900", cursor: "pointer", fontSize: 13, fontWeight: 600, padding: 0 }}>
-              {screen === "signin" ? "Sign up" : "Sign in"}
-            </button>
-          </p>
-        )}
+          {(screen === "signin" || screen === "signup") && (
+            <p style={{ fontSize: 12, color: "#2e4a5e", marginTop: 20 }}>
+              {screen === "signin" ? "No account? " : "Already have one? "}
+              <button
+                onClick={() => { setScreen(screen === "signin" ? "signup" : "signin"); setError(null); setInfo(null); }}
+                style={{ background: "none", border: "none", color: "#5a7d96", cursor: "pointer", fontSize: 12, fontWeight: 500, padding: 0 }}>
+                {screen === "signin" ? "Sign up" : "Sign in"}
+              </button>
+            </p>
+          )}
+
+        </div>
       </div>
+
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');`}</style>
     </div>
   );
 }
