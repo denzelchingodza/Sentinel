@@ -87,13 +87,26 @@ export default function PrivacyPage() {
           <A href="https://vercel.com/legal/privacy-policy">privacy policy</A> governs this data.
         </Section>
 
+        <Section title="Infrastructure">
+          Sentinel runs entirely on Amazon Web Services (AWS). All compute, storage, authentication,
+          and email delivery is handled by AWS services in the{" "}
+          <strong style={{ color: "#a8b3c1" }}>af-south-1 (Cape Town)</strong> region.
+          Infrastructure is provisioned and version-controlled with Terraform — there are no manually
+          configured servers. AWS is responsible for the physical security, availability, and
+          redundancy of the underlying infrastructure. You can read Amazon&apos;s security and
+          compliance documentation at{" "}
+          <A href="https://aws.amazon.com/compliance/">aws.amazon.com/compliance</A>.
+        </Section>
+
         <Section title="Third-party services">
           <ul style={{ paddingLeft: 20, lineHeight: 2.1, color: SUB, fontSize: 14 }}>
-            <li><strong style={{ color: "#a8b3c1" }}>Amazon Cognito</strong> — user authentication</li>
-            <li><strong style={{ color: "#a8b3c1" }}>Amazon DynamoDB</strong> — storing monitors and check results</li>
-            <li><strong style={{ color: "#a8b3c1" }}>Amazon SES</strong> — sending alert emails</li>
-            <li><strong style={{ color: "#a8b3c1" }}>AWS Lambda</strong> — running uptime checks</li>
-            <li><strong style={{ color: "#a8b3c1" }}>Vercel</strong> — hosting the frontend</li>
+            <li><strong style={{ color: "#FF9900" }}>AWS Lambda</strong> — runs uptime checks every 60 seconds</li>
+            <li><strong style={{ color: "#FF9900" }}>Amazon DynamoDB</strong> — stores monitors, check results, and incidents</li>
+            <li><strong style={{ color: "#FF9900" }}>Amazon SES</strong> — sends alert and recovery emails</li>
+            <li><strong style={{ color: "#FF9900" }}>Amazon Cognito</strong> — manages user accounts and authentication</li>
+            <li><strong style={{ color: "#FF9900" }}>Amazon API Gateway</strong> — API routing and JWT verification</li>
+            <li><strong style={{ color: "#FF9900" }}>Amazon SQS</strong> — queues failed alert notifications for retry</li>
+            <li><strong style={{ color: "#a8b3c1" }}>Vercel</strong> — hosts the frontend</li>
           </ul>
         </Section>
 

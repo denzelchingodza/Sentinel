@@ -23,6 +23,22 @@ function ShieldIcon() {
   );
 }
 
+function AwsLogo() {
+  return (
+    <div style={{
+      display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 3,
+      background: "#232F3E", borderRadius: 5, padding: "5px 10px",
+      border: "1px solid rgba(255,153,0,0.12)",
+    }}>
+      <span style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: "0.5px", lineHeight: 1, fontFamily: "Arial Black, Arial, sans-serif" }}>aws</span>
+      <svg width="22" height="6" viewBox="0 0 22 6" fill="none">
+        <path d="M0.5 3.5 Q11 7.5 21.5 3.5" stroke="#FF9900" strokeWidth="1.6" strokeLinecap="round"/>
+        <path d="M19.5 1.5 L22 3.5 L19.5 5.5" fill="#FF9900"/>
+      </svg>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <div style={{ minHeight: "100vh", background: "#0f1117", color: "#e6edf3", display: "flex", flexDirection: "column" }}>
@@ -90,10 +106,11 @@ export default function Home() {
 
             {/* Stack */}
             <div style={{ flex: "0 0 auto" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Built with</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {["Next.js", "AWS Lambda", "Amazon DynamoDB", "Amazon SES", "Amazon Cognito", "Terraform"].map((t) => (
-                  <span key={t} style={{ fontSize: 13, color: "#6e7681" }}>{t}</span>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Infrastructure</div>
+              <AwsLogo />
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
+                {["Lambda · DynamoDB · SES", "Cognito · API Gateway · SQS", "Provisioned with Terraform", "Frontend on Vercel"].map((t) => (
+                  <span key={t} style={{ fontSize: 12, color: "#3d4450" }}>{t}</span>
                 ))}
               </div>
             </div>
@@ -112,6 +129,10 @@ export default function Home() {
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
               <Link href="/privacy" style={{ fontSize: 11, color: "#3d4450", textDecoration: "none" }}>Privacy</Link>
               <span style={{ fontSize: 11, color: "#2d333b" }}>Serverless · Zero downtime · No servers to manage</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 11, color: "#2d333b" }}>Hosted on</span>
+                <AwsLogo />
+              </div>
             </div>
           </div>
         </div>
