@@ -16,11 +16,14 @@ function ShieldIcon() {
 
 function AwsMark() {
   return (
-    <span style={{ display: "inline-block", lineHeight: 0, position: "relative", width: 156, height: 54 }}>
-      <img src="/aws-badge-dark.svg" alt="Powered by AWS" width={156} height={54}
-        className="aws-badge-dark" style={{ borderRadius: 7, display: "block" }} />
-      <img src="/aws-badge-light.svg" alt="" aria-hidden width={156} height={54}
-        className="aws-badge-light" style={{ borderRadius: 7, position: "absolute", inset: 0 }} />
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, lineHeight: 0, position: "relative" }}>
+      <span style={{ fontSize: 10, color: "var(--cs)", letterSpacing: "0.06em", fontWeight: 400 }}>Powered by</span>
+      <span style={{ display: "inline-block", lineHeight: 0, position: "relative", width: 68, height: 40 }}>
+        <img src="/aws-logo-dark.svg" alt="AWS" width={68} height={40}
+          className="aws-badge-dark" style={{ display: "block" }} />
+        <img src="/aws-logo-light.svg" alt="" aria-hidden width={68} height={40}
+          className="aws-badge-light" style={{ position: "absolute", inset: 0 }} />
+      </span>
     </span>
   );
 }
