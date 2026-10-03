@@ -54,6 +54,8 @@ export default function AuthPage() {
   const [resetCode, setResetCode]     = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading]         = useState(false);
+  const [showPw, setShowPw]           = useState(false);
+  const [showNewPw, setShowNewPw]     = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [error, setError]             = useState<string | null>(null);
@@ -212,9 +214,18 @@ export default function AuthPage() {
                     Forgot?
                   </button>
                 </div>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••" style={inputStyle}
-                  onKeyDown={(e) => onKey(e, handleSignIn)} />
+                <div style={{ position: "relative" }}>
+                  <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••" style={{ ...inputStyle, paddingRight: 38 }}
+                    onKeyDown={(e) => onKey(e, handleSignIn)} />
+                  <button onClick={() => setShowPw(p => !p)}
+                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                    {showPw
+                      ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    }
+                  </button>
+                </div>
               </div>
               <button onClick={handleSignIn} disabled={loading}
                 style={{ ...btnPrimary, opacity: loading ? 0.6 : 1, cursor: loading ? "not-allowed" : "pointer" }}>
@@ -233,9 +244,18 @@ export default function AuthPage() {
               </div>
               <div>
                 <label style={labelStyle}>Password</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min 8 chars, include a number" style={inputStyle}
-                  onKeyDown={(e) => onKey(e, handleSignUp)} />
+                <div style={{ position: "relative" }}>
+                  <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Min 8 chars, include a number" style={{ ...inputStyle, paddingRight: 38 }}
+                    onKeyDown={(e) => onKey(e, handleSignUp)} />
+                  <button onClick={() => setShowPw(p => !p)}
+                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                    {showPw
+                      ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    }
+                  </button>
+                </div>
               </div>
               <button onClick={handleSignUp} disabled={loading}
                 style={{ ...btnPrimary, opacity: loading ? 0.6 : 1, cursor: loading ? "not-allowed" : "pointer" }}>
@@ -288,9 +308,18 @@ export default function AuthPage() {
               </div>
               <div>
                 <label style={labelStyle}>New password</label>
-                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Min 8 chars, include a number" style={inputStyle}
-                  onKeyDown={(e) => onKey(e, handleReset)} />
+                <div style={{ position: "relative" }}>
+                  <input type={showNewPw ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Min 8 chars, include a number" style={{ ...inputStyle, paddingRight: 38 }}
+                    onKeyDown={(e) => onKey(e, handleReset)} />
+                  <button onClick={() => setShowNewPw(p => !p)}
+                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                    {showNewPw
+                      ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    }
+                  </button>
+                </div>
               </div>
               <button onClick={handleReset} disabled={loading}
                 style={{ ...btnPrimary, opacity: loading ? 0.6 : 1, cursor: loading ? "not-allowed" : "pointer" }}>
