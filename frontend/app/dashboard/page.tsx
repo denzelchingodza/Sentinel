@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getIdToken, signOut, getSession } from "../../lib/cognito";
+import ThemeToggle from "../../components/ThemeToggle";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -44,7 +45,7 @@ function UptimeBar({ uptime }: { uptime: string }) {
   const color = pct >= 99 ? "#22c55e" : pct >= 95 ? "#f59e0b" : "#ef4444";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
-      <div style={{ width: 72, height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+      <div style={{ width: 72, height: 3, background: "var(--bd)", borderRadius: 2, overflow: "hidden" }}>
         <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 2, transition: "width 0.5s ease" }} />
       </div>
       <span style={{ fontSize: 12, fontWeight: 600, color, minWidth: 40, textAlign: "right" }}>{uptime}%</span>
@@ -54,10 +55,10 @@ function UptimeBar({ uptime }: { uptime: string }) {
 
 const INPUT: React.CSSProperties = {
   width: "100%",
-  background: "#06111e",
-  border: "1px solid rgba(255,255,255,0.06)",
+  background: "var(--bg-input)",
+  border: "1px solid var(--bd)",
   borderRadius: 7,
-  color: "#dce6f0",
+  color: "var(--ch)",
   padding: "9px 12px",
   fontSize: 13,
   outline: "none",
@@ -160,7 +161,7 @@ export default function Dashboard() {
 
 
   if (!authChecked || loading) {
-    return <div style={{ minHeight: "100vh", background: "#080f1a" }} />;
+    return <div style={{ minHeight: "100vh", background: "var(--bg)" }} />;
   }
 
   const upCount   = monitors.filter((m) => m.lastStatus === "up").length;
@@ -176,32 +177,35 @@ export default function Dashboard() {
   return (
     <>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');`}</style>
-      <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--ch)", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
         {/* Nav */}
-        <nav className="nav-pad" style={{ background: "#050b14", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+        <nav className="nav-pad" style={{ background: "var(--bg-nav)", borderBottom: "1px solid var(--bd-faint)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
               <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-                stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
-              <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+              <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)", letterSpacing: "0.04em" }}>Sentinel</span>
           </Link>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#2e4a5e" }}>{timeAgo(lastRefresh.toISOString())}</span>
+            <span style={{ fontSize: 11, color: "var(--cf)" }}>{timeAgo(lastRefresh.toISOString())}</span>
             <button onClick={refresh}
-              style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#4a6a80", width: 30, height: 30, borderRadius: 6, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              style={{ background: "transparent", border: "1px solid var(--bd)", color: "var(--cd)", width: 30, height: 30, borderRadius: 6, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
               ↻
             </button>
             <button onClick={() => setShowForm((v) => !v)}
-              style={{ background: showForm ? "transparent" : "#FF9900", border: showForm ? "1px solid rgba(255,255,255,0.06)" : "none", color: showForm ? "#4a6a80" : "#000", padding: "6px 16px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+              style={{ background: showForm ? "transparent" : "#FF9900", border: showForm ? "1px solid var(--bd)" : "none", color: showForm ? "var(--cd)" : "#000", padding: "6px 16px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
               {showForm ? "Cancel" : "+ Monitor"}
             </button>
+            {/* Theme toggle */}
+            <ThemeToggle style={{ padding: "5px 8px", fontSize: 12, gap: 6, width: "auto" }} />
+
             {/* Account avatar — obvious entry point to /account */}
             <Link href="/account" title={userEmail ?? "Account"}
-              style={{ width: 30, height: 30, borderRadius: "50%", background: "#0c1520", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#6a8fa8", letterSpacing: "0.04em" }}>
+              style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--bg-card)", border: "1px solid var(--bd)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--cs)", letterSpacing: "0.04em" }}>
                 {userEmail ? userEmail.slice(0, 2).toUpperCase() : "?"}
               </span>
             </Link>
@@ -231,7 +235,7 @@ export default function Dashboard() {
                 return (
                   <div key={inc.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderTop: "1px solid rgba(239,68,68,0.1)", fontSize: 13 }}>
                     <span style={{ color: "#fca5a5", fontWeight: 500 }}>{mon?.name || inc.url}</span>
-                    <span style={{ color: "#4a6a80" }}>since {timeAgo(inc.startTime)}</span>
+                    <span style={{ color: "var(--cd)" }}>since {timeAgo(inc.startTime)}</span>
                   </div>
                 );
               })}
@@ -240,13 +244,13 @@ export default function Dashboard() {
 
           {/* Add monitor form */}
           {showForm && (
-            <div style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "20px 22px", marginBottom: 20, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+            <div style={{ background: "var(--bg-card)", border: "1px solid var(--bd)", borderRadius: 12, padding: "20px 22px", marginBottom: 20, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
               <div style={{ flex: "1 1 140px" }}>
-                <label style={{ fontSize: 9, color: "#4a6a80", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>Name</label>
+                <label style={{ fontSize: 9, color: "var(--cd)", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>Name</label>
                 <input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="My API" style={INPUT} />
               </div>
               <div style={{ flex: "2 1 220px" }}>
-                <label style={{ fontSize: 9, color: "#4a6a80", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>URL</label>
+                <label style={{ fontSize: 9, color: "var(--cd)", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>URL</label>
                 <input value={formUrl} onChange={(e) => setFormUrl(e.target.value)} placeholder="https://example.com"
                   onKeyDown={(e) => e.key === "Enter" && addMonitor()} style={INPUT} />
               </div>
@@ -260,13 +264,13 @@ export default function Dashboard() {
           {/* Stat cards */}
           <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 20 }}>
             {[
-              { label: "Total",        value: monitors.length,                          accent: "rgba(255,255,255,0.06)", color: "#dce6f0" },
-              { label: "Online",       value: upCount,                                  accent: upCount > 0 ? "rgba(34,197,94,0.4)" : "rgba(255,255,255,0.06)", color: upCount > 0 ? "#22c55e" : "#dce6f0" },
-              { label: "Down",         value: downCount,                                accent: downCount > 0 ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.06)", color: downCount > 0 ? "#ef4444" : "#dce6f0" },
-              { label: "Avg response", value: avgMs ? `${avgMs}ms` : "—",              accent: "rgba(255,255,255,0.06)", color: "#dce6f0" },
+              { label: "Total",        value: monitors.length,                          accent: "var(--bd)", color: "var(--ch)" },
+              { label: "Online",       value: upCount,                                  accent: upCount > 0 ? "rgba(34,197,94,0.4)" : "var(--bd)", color: upCount > 0 ? "#22c55e" : "var(--ch)" },
+              { label: "Down",         value: downCount,                                accent: downCount > 0 ? "rgba(239,68,68,0.4)" : "var(--bd)", color: downCount > 0 ? "#ef4444" : "var(--ch)" },
+              { label: "Avg response", value: avgMs ? `${avgMs}ms` : "—",              accent: "var(--bd)", color: "var(--ch)" },
             ].map((c) => (
-              <div key={c.label} style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderLeft: `2px solid ${c.accent}`, borderRadius: 12, padding: "18px 20px" }}>
-                <div style={{ fontSize: 9, color: "#4a6a80", textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700, marginBottom: 10 }}>{c.label}</div>
+              <div key={c.label} style={{ background: "var(--bg-card)", border: "1px solid var(--bd)", borderLeft: `2px solid ${c.accent}`, borderRadius: 12, padding: "18px 20px" }}>
+                <div style={{ fontSize: 9, color: "var(--cd)", textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700, marginBottom: 10 }}>{c.label}</div>
                 <div style={{ fontSize: 24, fontWeight: 700, color: c.color, letterSpacing: "-0.02em" }}>{c.value}</div>
               </div>
             ))}
@@ -274,7 +278,7 @@ export default function Dashboard() {
 
           {/* Monitor list */}
           {monitors.length === 0 ? (
-            <div style={{ background: "#0c1520", border: "1px dashed rgba(255,255,255,0.06)", borderRadius: 12, padding: "60px 24px", textAlign: "center", color: "#4a6a80", fontSize: 14 }}>
+            <div style={{ background: "var(--bg-card)", border: "1px dashed var(--bd)", borderRadius: 12, padding: "60px 24px", textAlign: "center", color: "var(--cd)", fontSize: 14 }}>
               No monitors yet. Add one to get started.
             </div>
           ) : (
@@ -282,7 +286,7 @@ export default function Dashboard() {
               {/* Desktop column headers */}
               <div className="mon-table-head" style={{ display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto", alignItems: "center", gap: "0 16px", padding: "6px 18px", marginBottom: 6 }}>
                 {["", "Monitor", "Uptime (24h)", "Response", "Status", "Checked", ""].map((h, i) => (
-                  <span key={i} style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700, textAlign: i >= 2 ? "right" : "left" }}>{h}</span>
+                  <span key={i} style={{ fontSize: 9, color: "var(--clo)", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700, textAlign: i >= 2 ? "right" : "left" }}>{h}</span>
                 ))}
               </div>
 
@@ -291,7 +295,7 @@ export default function Dashboard() {
                   const a = analytics[m.id];
                   const isUp   = m.lastStatus === "up";
                   const isDown = m.lastStatus === "down";
-                  const msColor = !m.lastResponseTime ? "#4a6a80"
+                  const msColor = !m.lastResponseTime ? "var(--cd)"
                     : m.lastResponseTime < 500  ? "#22c55e"
                     : m.lastResponseTime < 2000 ? "#f59e0b"
                     : "#ef4444";
@@ -302,27 +306,27 @@ export default function Dashboard() {
                         Remove
                       </button>
                       <button onClick={() => setConfirmDelete(null)}
-                        style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#4a6a80", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
+                        style={{ background: "transparent", border: "1px solid var(--bd)", color: "var(--cd)", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
                         No
                       </button>
                     </div>
                   ) : (
                     <button onClick={() => setConfirmDelete(m.id)}
-                      style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#3d607a", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      style={{ background: "transparent", border: "1px solid var(--bd)", color: "var(--clo)", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       ✕
                     </button>
                   );
                   return (
-                    <div key={m.id} style={{ background: "#0c1520", border: `1px solid ${isDown ? "rgba(239,68,68,0.25)" : "rgba(255,255,255,0.05)"}`, borderRadius: 10 }}>
+                    <div key={m.id} style={{ background: "var(--bg-card)", border: `1px solid ${isDown ? "rgba(239,68,68,0.25)" : "var(--bd-faint)"}`, borderRadius: 10 }}>
                       {/* Desktop row */}
                       <div className="mon-cols" style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto", alignItems: "center", gap: "0 16px" }}>
-                        <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "rgba(255,255,255,0.08)", flexShrink: 0 }} />
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "var(--bd)", flexShrink: 0 }} />
                         <div style={{ overflow: "hidden" }}>
-                          <div style={{ fontWeight: 600, fontSize: 14, color: "#dce6f0", marginBottom: 2 }}>{m.name}</div>
-                          <div style={{ fontSize: 11, color: "#3d607a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
+                          <div style={{ fontWeight: 600, fontSize: 14, color: "var(--ch)", marginBottom: 2 }}>{m.name}</div>
+                          <div style={{ fontSize: 11, color: "var(--clo)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
                         </div>
                         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                          {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d607a" }}>—</span>}
+                          {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "var(--clo)" }}>—</span>}
                         </div>
                         <div style={{ textAlign: "right" }}>
                           <span style={{ fontSize: 14, fontWeight: 600, color: msColor }}>
@@ -330,39 +334,39 @@ export default function Dashboard() {
                           </span>
                         </div>
                         <div style={{ textAlign: "right" }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#3d607a" }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "var(--clo)" }}>
                             {m.lastStatus}
                           </span>
                         </div>
-                        <div style={{ textAlign: "right", fontSize: 11, color: "#3d607a" }}>{timeAgo(m.lastChecked)}</div>
+                        <div style={{ textAlign: "right", fontSize: 11, color: "var(--clo)" }}>{timeAgo(m.lastChecked)}</div>
                         {deleteActions}
                       </div>
                       {/* Mobile card */}
                       <div className="mon-mobile" style={{ display: "none", padding: "14px 16px", flexDirection: "column", gap: 10 }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "rgba(255,255,255,0.08)", flexShrink: 0 }} />
+                            <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "var(--bd)", flexShrink: 0 }} />
                             <div>
-                              <div style={{ fontWeight: 600, fontSize: 14, color: "#dce6f0" }}>{m.name}</div>
-                              <div style={{ fontSize: 10, color: "#3d607a", marginTop: 2 }}>{m.url}</div>
+                              <div style={{ fontWeight: 600, fontSize: 14, color: "var(--ch)" }}>{m.name}</div>
+                              <div style={{ fontSize: 10, color: "var(--clo)", marginTop: 2 }}>{m.url}</div>
                             </div>
                           </div>
-                          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#3d607a" }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "var(--clo)" }}>
                             {m.lastStatus}
                           </span>
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <div style={{ display: "flex", gap: 16 }}>
                             <div>
-                              <div style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Response</div>
+                              <div style={{ fontSize: 9, color: "var(--clo)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Response</div>
                               <span style={{ fontSize: 13, fontWeight: 600, color: msColor }}>{m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}</span>
                             </div>
                             <div>
-                              <div style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Checked</div>
-                              <span style={{ fontSize: 12, color: "#4a6a80" }}>{timeAgo(m.lastChecked)}</span>
+                              <div style={{ fontSize: 9, color: "var(--clo)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Checked</div>
+                              <span style={{ fontSize: 12, color: "var(--cd)" }}>{timeAgo(m.lastChecked)}</span>
                             </div>
                             {a && <div>
-                              <div style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Uptime</div>
+                              <div style={{ fontSize: 9, color: "var(--clo)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Uptime</div>
                               <UptimeBar uptime={a.uptime} />
                             </div>}
                           </div>
@@ -375,9 +379,9 @@ export default function Dashboard() {
               </div>
 
               {avgUptime && (
-                <div style={{ marginTop: 10, padding: "10px 18px", background: "#0c1520", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
-                  <span style={{ fontSize: 12, color: "#3d607a" }}>{monitors.length} monitor{monitors.length !== 1 ? "s" : ""} · checks every 60s</span>
-                  <span style={{ fontSize: 12, color: "#3d607a" }}>avg uptime <span style={{ color: "#22c55e", fontWeight: 600 }}>{avgUptime}%</span></span>
+                <div style={{ marginTop: 10, padding: "10px 18px", background: "var(--bg-card)", border: "1px solid var(--bd-faint)", borderRadius: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+                  <span style={{ fontSize: 12, color: "var(--clo)" }}>{monitors.length} monitor{monitors.length !== 1 ? "s" : ""} · checks every 60s</span>
+                  <span style={{ fontSize: 12, color: "var(--clo)" }}>avg uptime <span style={{ color: "#22c55e", fontWeight: 600 }}>{avgUptime}%</span></span>
                 </div>
               )}
             </>

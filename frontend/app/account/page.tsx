@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getSession, signOut, signIn, changePassword, deleteAccount } from "../../lib/cognito";
+import ThemeToggle from "../../components/ThemeToggle";
 
 const INPUT: React.CSSProperties = {
   width: "100%",
-  background: "#06111e",
-  border: "1px solid rgba(255,255,255,0.06)",
+  background: "var(--bg-input)",
+  border: "1px solid var(--bd)",
   borderRadius: 7,
-  color: "#dce6f0",
+  color: "var(--ch)",
   padding: "9px 12px",
   fontSize: 13,
   outline: "none",
@@ -19,7 +20,7 @@ const INPUT: React.CSSProperties = {
 
 const LABEL: React.CSSProperties = {
   fontSize: 9,
-  color: "#4a6a80",
+  color: "var(--cd)",
   display: "block",
   marginBottom: 6,
   textTransform: "uppercase",
@@ -28,8 +29,8 @@ const LABEL: React.CSSProperties = {
 };
 
 const CARD: React.CSSProperties = {
-  background: "#0c1520",
-  border: "1px solid rgba(255,255,255,0.06)",
+  background: "var(--bg-card)",
+  border: "1px solid var(--bd)",
   borderRadius: 14,
   padding: "24px 26px",
   marginBottom: 12,
@@ -118,7 +119,7 @@ export default function AccountPage() {
 
   const initials = email ? email.split("@")[0].slice(0, 2).toUpperCase() : "??";
 
-  if (!authChecked) return <div style={{ minHeight: "100vh", background: "#080f1a" }} />;
+  if (!authChecked) return <div style={{ minHeight: "100vh", background: "var(--bg)" }} />;
 
   return (
     <>
@@ -126,28 +127,29 @@ export default function AccountPage() {
 
       {/* Bye overlay */}
       {byeVisible && (
-        <div style={{ position: "fixed", inset: 0, background: "#080f1a", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-          <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(36px, 6vw, 60px)", fontWeight: 400, color: "#dce6f0", margin: 0 }}>Take care.</h1>
-          <p style={{ fontSize: 13, color: "#4a6a80" }}>Your account has been deleted.</p>
+        <div style={{ position: "fixed", inset: 0, background: "var(--bg)", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+          <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(36px, 6vw, 60px)", fontWeight: 400, color: "var(--ch)", margin: 0 }}>Take care.</h1>
+          <p style={{ fontSize: 13, color: "var(--cd)" }}>Your account has been deleted.</p>
         </div>
       )}
 
-      <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--ch)", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
         {/* Nav */}
-        <nav className="nav-pad" style={{ background: "#050b14", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+        <nav className="nav-pad" style={{ background: "var(--bg-nav)", borderBottom: "1px solid var(--bd-faint)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
               <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-                stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
-              <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+              <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)", letterSpacing: "0.04em" }}>Sentinel</span>
           </Link>
           <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-            <Link href="/dashboard" style={{ fontSize: 12, color: "#4a6a80", textDecoration: "none" }}>Dashboard</Link>
+            <ThemeToggle style={{ padding: "4px 8px", fontSize: 12, gap: 6, width: "auto" }} />
+            <Link href="/dashboard" style={{ fontSize: 12, color: "var(--cd)", textDecoration: "none" }}>Dashboard</Link>
             <button onClick={() => { signOut(); router.replace("/auth"); }}
-              style={{ background: "transparent", border: "none", color: "#3d607a", cursor: "pointer", fontSize: 12, padding: 0 }}>
+              style={{ background: "transparent", border: "none", color: "var(--clo)", cursor: "pointer", fontSize: 12, padding: 0 }}>
               Sign out
             </button>
           </div>
@@ -156,19 +158,19 @@ export default function AccountPage() {
         <main style={{ padding: "36px 48px 80px" }}>
 
           {/* Profile strip — full width */}
-          <div className="account-strip" style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div className="account-strip" style={{ background: "var(--bg-card)", border: "1px solid var(--bd)", borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#0f1f30", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 15, color: "#6a8fa8" }}>{initials}</span>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "var(--bg-input)", border: "1px solid var(--bd)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 15, color: "var(--cs)" }}>{initials}</span>
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#dce6f0", marginBottom: 3 }}>{email}</div>
-                {memberSince && <div style={{ fontSize: 11, color: "#4a6a80" }}>Member since {memberSince}</div>}
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ch)", marginBottom: 3 }}>{email}</div>
+                {memberSince && <div style={{ fontSize: 11, color: "var(--cd)" }}>Member since {memberSince}</div>}
               </div>
             </div>
             <div style={{ display: "flex", gap: 6 }}>
-              <span style={{ fontSize: 10, color: "#6a8fa8", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "3px 12px" }}>Personal</span>
-              <span style={{ fontSize: 10, color: "#4a6a80", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 20, padding: "3px 12px" }}>af-south-1</span>
+              <span style={{ fontSize: 10, color: "var(--cs)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--bd)", borderRadius: 20, padding: "3px 12px" }}>Personal</span>
+              <span style={{ fontSize: 10, color: "var(--cd)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--bd-faint)", borderRadius: 20, padding: "3px 12px" }}>af-south-1</span>
             </div>
           </div>
 
@@ -177,7 +179,7 @@ export default function AccountPage() {
 
             {/* LEFT — Change password */}
             <div style={CARD}>
-              <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "#dce6f0", margin: "0 0 20px", lineHeight: 1.2 }}>
+              <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "var(--ch)", margin: "0 0 20px", lineHeight: 1.2 }}>
                 Change password
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -187,7 +189,7 @@ export default function AccountPage() {
                     <input type={showCurrent ? "text" : "password"} value={currentPw} onChange={(e) => setCurrentPw(e.target.value)}
                       placeholder="••••••••" style={{ ...INPUT, paddingRight: 38 }} />
                     <button onClick={() => setShowCurrent((v) => !v)}
-                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--clo)", display: "flex" }}>
                       <EyeIcon open={showCurrent} />
                     </button>
                   </div>
@@ -199,7 +201,7 @@ export default function AccountPage() {
                       placeholder="••••••••" style={{ ...INPUT, paddingRight: 38 }}
                       onKeyDown={(e) => e.key === "Enter" && handleChangePassword()} />
                     <button onClick={() => setShowNew((v) => !v)}
-                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--clo)", display: "flex" }}>
                       <EyeIcon open={showNew} />
                     </button>
                   </div>
@@ -225,10 +227,10 @@ export default function AccountPage() {
 
             {/* RIGHT — Preferences (coming soon) */}
             <div style={CARD}>
-              <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "#dce6f0", margin: "0 0 4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "var(--ch)", margin: "0 0 4px", lineHeight: 1.2 }}>
                 Preferences
               </h2>
-              <span style={{ fontSize: 10, color: "#4a6a80", letterSpacing: "0.06em", display: "block", marginBottom: 18 }}>coming soon</span>
+              <span style={{ fontSize: 10, color: "var(--cd)", letterSpacing: "0.06em", display: "block", marginBottom: 18 }}>coming soon</span>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {[
                   { label: "Alert threshold", desc: "Set how many failures before you get emailed." },
@@ -236,11 +238,11 @@ export default function AccountPage() {
                   { label: "AI digest", desc: "Weekly plain-language summary of your uptime and trends." },
                   { label: "Smart alerting", desc: "Let the AI suppress noise and surface what actually matters." },
                 ].map((item) => (
-                  <div key={item.label} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div key={item.label} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--bd-faint)" }}>
                     <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(74,106,128,0.4)", marginTop: 5, flexShrink: 0 }} />
                     <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: "#6a8fa8", marginBottom: 2 }}>{item.label}</div>
-                      <div style={{ fontSize: 11, color: "#3d607a", lineHeight: 1.7 }}>{item.desc}</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--cs)", marginBottom: 2 }}>{item.label}</div>
+                      <div style={{ fontSize: 11, color: "var(--clo)", lineHeight: 1.7 }}>{item.desc}</div>
                     </div>
                   </div>
                 ))}
@@ -250,14 +252,14 @@ export default function AccountPage() {
           </div>{/* end grid */}
 
           {/* Delete account */}
-          <div style={{ marginTop: 48, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-            <div style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700, marginBottom: 14 }}>Danger zone</div>
+          <div style={{ marginTop: 48, paddingTop: 24, borderTop: "1px solid var(--bd-faint)" }}>
+            <div style={{ fontSize: 9, color: "var(--clo)", textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700, marginBottom: 14 }}>Danger zone</div>
 
             {deleteStep === "idle" ? (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
                 <div>
-                  <div style={{ fontSize: 13, color: "#6a8fa8", marginBottom: 3 }}>Delete account</div>
-                  <div style={{ fontSize: 11, color: "#3d607a", lineHeight: 1.6 }}>Permanently removes your account, all monitors, and all data.</div>
+                  <div style={{ fontSize: 13, color: "var(--cs)", marginBottom: 3 }}>Delete account</div>
+                  <div style={{ fontSize: 11, color: "var(--clo)", lineHeight: 1.6 }}>Permanently removes your account, all monitors, and all data.</div>
                 </div>
                 <button onClick={() => { setDeleteStep("confirm"); setDeleteError(null); }}
                   style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.15)", color: "#6b4444", padding: "8px 16px", borderRadius: 7, cursor: "pointer", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
@@ -266,7 +268,7 @@ export default function AccountPage() {
               </div>
             ) : (
               <div style={{ background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.12)", borderRadius: 10, padding: "18px 20px" }}>
-                <div style={{ fontSize: 13, color: "#8baec4", marginBottom: 16, lineHeight: 1.6 }}>
+                <div style={{ fontSize: 13, color: "var(--cb)", marginBottom: 16, lineHeight: 1.6 }}>
                   This cannot be undone. Enter your password to confirm.
                 </div>
                 <div style={{ marginBottom: 14 }}>
@@ -278,7 +280,7 @@ export default function AccountPage() {
                       placeholder="••••••••"
                       style={{ ...INPUT, paddingRight: 38, borderColor: "rgba(239,68,68,0.15)" }} />
                     <button onClick={() => setShowDeletePw((v) => !v)}
-                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--clo)", display: "flex" }}>
                       <EyeIcon open={showDeletePw} />
                     </button>
                   </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ThemeToggle from "../../components/ThemeToggle";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,10 +14,10 @@ type Screen = "signin" | "signup" | "confirm" | "forgot" | "reset";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#06111e",
-  border: "1px solid rgba(255,255,255,0.06)",
+  background: "var(--bg-input)",
+  border: "1px solid var(--bd)",
   borderRadius: 7,
-  color: "#e8edf2",
+  color: "var(--cin)",
   padding: "10px 13px",
   fontSize: 14,
   outline: "none",
@@ -25,7 +26,7 @@ const inputStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   fontSize: 9,
-  color: "#2a3f54",
+  color: "var(--cf)",
   display: "block",
   marginBottom: 6,
   textTransform: "uppercase",
@@ -159,36 +160,39 @@ export default function AuthPage() {
   };
 
   if (redirecting || !sessionChecked) {
-    return <div style={{ minHeight: "100vh", background: "#080f1a" }} />;
+    return <div style={{ minHeight: "100vh", background: "var(--bg)" }} />;
   }
 
   return (
-    <div className="auth-grid" style={{ minHeight: "100vh", background: "#080f1a", display: "grid", gridTemplateColumns: "1fr 1fr", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+    <div className="auth-grid" style={{ minHeight: "100vh", background: "var(--bg)", display: "grid", gridTemplateColumns: "1fr 1fr", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
       {/* LEFT — context */}
-      <div className="auth-left" style={{ padding: "48px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid rgba(255,255,255,0.04)" }}>
+      <div className="auth-left" style={{ padding: "48px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid var(--bd-faint)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
               <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-                stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
-              <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+              <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)", letterSpacing: "0.04em" }}>Sentinel</span>
           </div>
-          <Link href="/" style={{ fontSize: 11, color: "#2e4a5e", textDecoration: "none" }}>Home</Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <ThemeToggle style={{ padding: "4px 8px", fontSize: 11, gap: 5, width: "auto" }} />
+            <Link href="/" style={{ fontSize: 11, color: "var(--cf)", textDecoration: "none" }}>Home</Link>
+          </div>
         </div>
 
         <div>
-          <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(28px, 3.5vw, 42px)", fontWeight: 400, color: "#dce6f0", lineHeight: 1.15, letterSpacing: "-0.01em", margin: "0 0 16px" }}>
+          <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(28px, 3.5vw, 42px)", fontWeight: 400, color: "var(--ch)", lineHeight: 1.15, letterSpacing: "-0.01em", margin: "0 0 16px" }}>
             URL monitoring<br />on AWS.
           </h1>
-          <p style={{ fontSize: 13, color: "#3d607a", lineHeight: 1.8, margin: 0, maxWidth: 320 }}>
+          <p style={{ fontSize: 13, color: "var(--clo)", lineHeight: 1.8, margin: 0, maxWidth: 320 }}>
             Checks your URLs every 60 seconds. Emails you when something goes down, and again when it recovers.
           </p>
         </div>
 
-        <span style={{ fontSize: 11, color: "#1e3347" }}>af-south-1 · Serverless</span>
+        <span style={{ fontSize: 11, color: "var(--cf)" }}>af-south-1 · Serverless</span>
       </div>
 
       {/* RIGHT — form */}
@@ -199,17 +203,17 @@ export default function AuthPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
                 <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-                  stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
-                <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+                <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+              <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)", letterSpacing: "0.04em" }}>Sentinel</span>
             </div>
-            <Link href="/" style={{ fontSize: 11, color: "#2e4a5e", textDecoration: "none" }}>Home</Link>
+            <Link href="/" style={{ fontSize: 11, color: "var(--cf)", textDecoration: "none" }}>Home</Link>
           </div>
         </div>
         <div style={{ width: "100%", maxWidth: 360, margin: "0 auto" }}>
 
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: "#dce6f0", marginBottom: 24 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--ch)", marginBottom: 24 }}>
             {screen === "signin"  ? "Sign in"           :
              screen === "signup"  ? "Create account"    :
              screen === "confirm" ? "Verify your email" :
@@ -240,7 +244,7 @@ export default function AuthPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
                   <label style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
                   <button onClick={() => { setScreen("forgot"); setError(null); setInfo(null); }}
-                    style={{ background: "none", border: "none", color: "#3d607a", cursor: "pointer", fontSize: 11, padding: 0 }}>
+                    style={{ background: "none", border: "none", color: "var(--clo)", cursor: "pointer", fontSize: 11, padding: 0 }}>
                     Forgot?
                   </button>
                 </div>
@@ -249,7 +253,7 @@ export default function AuthPage() {
                     placeholder="••••••••" style={{ ...inputStyle, paddingRight: 38 }}
                     onKeyDown={(e) => onKey(e, handleSignIn)} />
                   <button onClick={() => setShowPw(p => !p)}
-                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--clo)", display: "flex" }}>
                     {showPw
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                       : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -279,7 +283,7 @@ export default function AuthPage() {
                     placeholder="Min 8 chars, include a number" style={{ ...inputStyle, paddingRight: 38 }}
                     onKeyDown={(e) => onKey(e, handleSignUp)} />
                   <button onClick={() => setShowPw(p => !p)}
-                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--clo)", display: "flex" }}>
                     {showPw
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                       : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -322,7 +326,7 @@ export default function AuthPage() {
                 {loading ? "Sending..." : "Send reset code"}
               </button>
               <button onClick={() => { setScreen("signin"); setError(null); setInfo(null); }}
-                style={{ background: "transparent", border: "none", color: "#2e4a5e", cursor: "pointer", fontSize: 12, marginTop: 2 }}>
+                style={{ background: "transparent", border: "none", color: "var(--cf)", cursor: "pointer", fontSize: 12, marginTop: 2 }}>
                 Back to sign in
               </button>
             </div>
@@ -343,7 +347,7 @@ export default function AuthPage() {
                     placeholder="Min 8 chars, include a number" style={{ ...inputStyle, paddingRight: 38 }}
                     onKeyDown={(e) => onKey(e, handleReset)} />
                   <button onClick={() => setShowNewPw(p => !p)}
-                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                    style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--clo)", display: "flex" }}>
                     {showNewPw
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                       : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -359,11 +363,11 @@ export default function AuthPage() {
           )}
 
           {(screen === "signin" || screen === "signup") && (
-            <p style={{ fontSize: 12, color: "#2e4a5e", marginTop: 20 }}>
+            <p style={{ fontSize: 12, color: "var(--cf)", marginTop: 20 }}>
               {screen === "signin" ? "No account? " : "Already have one? "}
               <button
                 onClick={() => { setScreen(screen === "signin" ? "signup" : "signin"); setError(null); setInfo(null); }}
-                style={{ background: "none", border: "none", color: "#5a7d96", cursor: "pointer", fontSize: 12, fontWeight: 500, padding: 0 }}>
+                style={{ background: "none", border: "none", color: "var(--cd)", cursor: "pointer", fontSize: 12, fontWeight: 500, padding: 0 }}>
                 {screen === "signin" ? "Sign up" : "Sign in"}
               </button>
             </p>

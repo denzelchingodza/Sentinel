@@ -1,12 +1,47 @@
 @import "tailwindcss";
 
+/* ── CSS theme tokens ─────────────────────────────────────── */
+:root {
+  /* Dark (default) */
+  --bg:       #080f1a;
+  --bg-card:  #0c1520;
+  --bg-nav:   #050b14;
+  --bg-input: #06111e;
+  --bd:       rgba(255,255,255,0.06);
+  --bd-faint: rgba(255,255,255,0.04);
+  --ch:  #dce6f0;   /* heading */
+  --cb:  #8baec4;   /* body */
+  --cs:  #6a8fa8;   /* secondary */
+  --cd:  #4a6a80;   /* dim */
+  --cf:  #2e4a5e;   /* faint */
+  --clo: #3d607a;   /* logo / border-blue */
+  --cin: #e8edf2;   /* input text */
+}
+
+[data-theme="light"] {
+  --bg:       #f0f5f9;
+  --bg-card:  #ffffff;
+  --bg-nav:   #e6edf4;
+  --bg-input: #f4f8fb;
+  --bd:       rgba(0,0,0,0.09);
+  --bd-faint: rgba(0,0,0,0.05);
+  --ch:  #0f1e2c;
+  --cb:  #2d4a5e;
+  --cs:  #3d6070;
+  --cd:  #5a7a90;
+  --cf:  #8baec4;
+  --clo: #4a7090;
+  --cin: #1a2d3e;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #080f1a;
-  color: #dce6f0;
+  background: var(--bg);
+  color: var(--cb);
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 @keyframes fadeUp {
