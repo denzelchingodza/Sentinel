@@ -15,6 +15,18 @@ function getPool() {
   return new CognitoUserPool(poolData);
 }
 
+// ── In-memory session cache ───────────────────────────────────────────────────
+// Avoids hitting localStorage + re-instantiating CognitoUserPool on every
+// API call. The cached session is reused until it's within 5 minutes of
+// expiring, at which point we go back to Cognito to refresh it.
+let _cachedSession: CognitoUserSession | null = null;
+
+function isCacheValid(session: CognitoUserSession): boolean {
+  const exp = session.getIdToken().getExpiration(); // unix seconds
+  const fiveMinutesFromNow = Math.floor(Date.now() / 1000) + 300;
+  return session.isValid() && exp > fiveMinutesFromNow;
+}
+
 // ── Sign up ───────────────────────────────────────────────────────────────────
 export function signUp(email: string, password: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -51,18 +63,32 @@ export function signIn(email: string, password: string): Promise<CognitoUserSess
 
 // ── Sign out ──────────────────────────────────────────────────────────────────
 export function signOut() {
+  _cachedSession = null;
   const user = getPool().getCurrentUser();
   if (user) user.signOut();
 }
 
 // ── Get the current session (refreshes tokens if needed) ──────────────────────
 export function getSession(): Promise<CognitoUserSession | null> {
+  // Return the cached session if it's still valid and not close to expiring
+  if (_cachedSession && isCacheValid(_cachedSession)) {
+    return Promise.resolve(_cachedSession);
+  }
+
   return new Promise((resolve) => {
     const user = getPool().getCurrentUser();
-    if (!user) return resolve(null);
+    if (!user) {
+      _cachedSession = null;
+      return resolve(null);
+    }
     user.getSession((err: Error | null, session: CognitoUserSession | null) => {
-      if (err || !session?.isValid()) resolve(null);
-      else resolve(session);
+      if (err || !session?.isValid()) {
+        _cachedSession = null;
+        resolve(null);
+      } else {
+        _cachedSession = session;
+        resolve(session);
+      }
     });
   });
 }
