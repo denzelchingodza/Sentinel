@@ -36,7 +36,7 @@ const CARD: React.CSSProperties = {
 
 const BODY: React.CSSProperties = {
   fontSize: 13,
-  color: "#5a7d96",
+  color: "#8baec4",
   lineHeight: 1.85,
 };
 
@@ -100,7 +100,7 @@ export default function Home() {
                 URL monitoring<br />on AWS.
               </h1>
               <p data-reveal data-delay="80"
-                style={{ ...BODY, fontSize: 14, maxWidth: 380, margin: 0 }}>
+                style={{ ...BODY, fontSize: 14, maxWidth: 380, margin: 0, color: "#8baec4" }}>
                 Checks your URLs every 60 seconds. Emails you when something goes down, and again when it recovers.
               </p>
             </div>
@@ -121,7 +121,7 @@ export default function Home() {
                   {[["60s", "interval"], ["24h", "history"], ["Email", "alerts"]].map(([val, lbl]) => (
                     <div key={lbl} style={{ flex: 1, borderRight: "1px solid rgba(255,255,255,0.04)" }}>
                       <div style={{ fontSize: 15, fontWeight: 700, color: "#FF9900" }}>{val}</div>
-                      <div style={{ fontSize: 10, color: "#3d607a", marginTop: 3, letterSpacing: "0.04em" }}>{lbl}</div>
+                      <div style={{ fontSize: 10, color: "#6a8fa8", marginTop: 3, letterSpacing: "0.04em" }}>{lbl}</div>
                     </div>
                   ))}
                   <div style={{ flex: 1 }} />
@@ -137,7 +137,7 @@ export default function Home() {
                   {["Per-monitor error isolation", "SES to SQS fallback", "Lambda dead letter queue"].map((t) => (
                     <div key={t} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#FF9900", flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, color: "#3d607a" }}>{t}</span>
+                      <span style={{ fontSize: 12, color: "#6a8fa8" }}>{t}</span>
                     </div>
                   ))}
                 </div>
@@ -158,14 +158,14 @@ export default function Home() {
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {["Lambda", "DynamoDB", "SES", "Cognito", "API Gateway", "SQS", "EventBridge"].map((s) => (
-                    <span key={s} style={{ fontSize: 10, color: "#3d607a", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 20, padding: "2px 9px" }}>{s}</span>
+                    <span key={s} style={{ fontSize: 10, color: "#6a8fa8", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "2px 9px" }}>{s}</span>
                   ))}
                 </div>
               </div>
 
               <div data-reveal data-delay="180" className="ch" style={CARD}>
                 <h2 style={{ ...HEADING, marginBottom: 6 }}>AI is coming<br />to Sentinel.</h2>
-                <span style={{ fontSize: 10, color: "#2e4a5e", letterSpacing: "0.06em", marginBottom: 14, display: "block" }}>coming soon</span>
+                <span style={{ fontSize: 10, color: "#4a6a80", letterSpacing: "0.06em", marginBottom: 14, display: "block" }}>coming soon</span>
                 <p style={{ ...BODY, marginBottom: 22 }}>
                   Monitoring tells you what happened. Intelligence will tell you why, and what is coming next.
                 </p>
@@ -178,8 +178,8 @@ export default function Home() {
                     <div key={f.title} style={{ display: "flex", gap: 12, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                       <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(74,158,255,0.25)", marginTop: 5, flexShrink: 0 }} />
                       <div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: "#5a7d96", marginBottom: 2 }}>{f.title}</div>
-                        <div style={{ fontSize: 11, color: "#3d607a", lineHeight: 1.7 }}>{f.desc}</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "#8baec4", marginBottom: 2 }}>{f.title}</div>
+                        <div style={{ fontSize: 11, color: "#6a8fa8", lineHeight: 1.7 }}>{f.desc}</div>
                       </div>
                     </div>
                   ))}
@@ -194,7 +194,7 @@ export default function Home() {
             <Link href="/auth" style={{ background: "#FF9900", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 6, padding: "11px 32px", textDecoration: "none" }}>
               Create account
             </Link>
-            <Link href="/auth" style={{ background: "transparent", color: "#3d607a", fontSize: 13, border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6, padding: "10px 28px", textDecoration: "none" }}>
+            <Link href="/auth" style={{ background: "transparent", color: "#6a8fa8", fontSize: 13, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "10px 28px", textDecoration: "none" }}>
               Sign in
             </Link>
           </div>
@@ -211,17 +211,17 @@ export default function Home() {
               </svg>
               <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e" }}>Sentinel</span>
             </div>
-            <p style={{ fontSize: 12, color: "#2a3f52", lineHeight: 1.7, margin: "0 0 16px", maxWidth: 300 }}>
+            <p style={{ fontSize: 12, color: "#6a8fa8", lineHeight: 1.7, margin: "0 0 16px", maxWidth: 300 }}>
               URL monitoring built on AWS. Checks every 60 seconds, alerts on downtime. A personal project by Denzel Chingodza.
             </p>
-            <span style={{ fontSize: 11, color: "#1e3347" }}>Lambda · DynamoDB · SES · Cognito · SQS · EventBridge · af-south-1</span>
+            <span style={{ fontSize: 11, color: "#4a6a80" }}>Lambda · DynamoDB · SES · Cognito · SQS · EventBridge · af-south-1</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between" }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-              <Link href="/privacy" style={{ fontSize: 11, color: "#3d607a", textDecoration: "none" }}>Privacy</Link>
-              <a href="mailto:denzel.chingodza@icloud.com" style={{ fontSize: 11, color: "#2e4a5e", textDecoration: "none" }}>denzel.chingodza@icloud.com</a>
+              <Link href="/privacy" style={{ fontSize: 11, color: "#6a8fa8", textDecoration: "none" }}>Privacy</Link>
+              <a href="mailto:denzel.chingodza@icloud.com" style={{ fontSize: 11, color: "#5a7d96", textDecoration: "none" }}>denzel.chingodza@icloud.com</a>
             </div>
-            <span style={{ fontSize: 11, color: "#1e3347" }}>2026</span>
+            <span style={{ fontSize: 11, color: "#4a6a80" }}>2026</span>
           </div>
         </footer>
 

@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 400, letterSpacing: "-0.01em", color: "#dce6f0", margin: "0 0 12px", lineHeight: 1.1 }}>
           Privacy
         </h1>
-        <p style={{ fontSize: 13, color: "#3d607a", marginBottom: 52, lineHeight: 1.7 }}>
+        <p style={{ fontSize: 13, color: "#8baec4", marginBottom: 52, lineHeight: 1.7 }}>
           Sentinel is a personal project, not a company. This page is just an honest explanation of what gets stored when you use it.
         </p>
 
@@ -54,16 +54,16 @@ export default function PrivacyPage() {
 
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.04)", margin: "40px 0" }} />
 
-        <p style={{ fontSize: 13, color: "#3d607a", lineHeight: 1.8 }}>
+        <p style={{ fontSize: 13, color: "#8baec4", lineHeight: 1.8 }}>
           Questions? <a href="mailto:denzel.chingodza@icloud.com" style={{ color: "#5a7d96", textDecoration: "none", borderBottom: "1px solid rgba(90,125,150,0.3)", paddingBottom: 1 }}>denzel.chingodza@icloud.com</a>
         </p>
 
       </div>
 
       <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "22px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <span style={{ fontSize: 11, color: "#3d607a" }}>2026 Denzel Chingodza</span>
+        <span style={{ fontSize: 11, color: "#6a8fa8" }}>2026 Denzel Chingodza</span>
         <div style={{ display: "flex", gap: 20 }}>
-          <Link href="/" style={{ fontSize: 11, color: "#3d607a", textDecoration: "none" }}>Home</Link>
+          <Link href="/" style={{ fontSize: 11, color: "#6a8fa8", textDecoration: "none" }}>Home</Link>
           <span style={{ fontSize: 11, color: "#2e4a5e" }}>Serverless · af-south-1</span>
         </div>
       </footer>
@@ -74,8 +74,8 @@ export default function PrivacyPage() {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 32 }}>
-      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#2e4a5e", marginBottom: 10 }}>{title}</div>
-      <p style={{ fontSize: 13, color: "#5a7d96", lineHeight: 1.85, margin: 0 }}>{children}</p>
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#4a6a80", marginBottom: 10 }}>{title}</div>
+      <p style={{ fontSize: 13, color: "#8baec4", lineHeight: 1.85, margin: 0 }}>{children}</p>
     </div>
   );
 }
