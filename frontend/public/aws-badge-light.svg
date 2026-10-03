@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 208 72" width="208" height="72">
+  <!-- Background -->
+  <rect width="208" height="72" rx="7" fill="#ffffff" stroke="rgba(35,47,62,0.12)" stroke-width="1"/>
+
+  <!-- "Powered by" label -->
+  <text
+    x="104" y="24"
+    font-family="'Amazon Ember', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="12" font-weight="300" letter-spacing="0.8"
+    fill="rgba(35,47,62,0.62)" text-anchor="middle">
+    Powered by
+  </text>
+
+  <!-- "aws" wordmark -->
+  <text
+    x="104" y="52"
+    font-family="'Arial Black', 'Arial Bold', Arial, Helvetica, sans-serif"
+    font-size="26" font-weight="900" letter-spacing="2"
+    fill="#232F3E" text-anchor="middle">
+    aws
+  </text>
+
+  <!-- Orange smile / swoosh -->
+  <path
+    d="M56 60 Q104 74 152 60"
+    stroke="#FF9900" stroke-width="2.8" fill="none"
+    stroke-linecap="round"/>
+  <!-- Arrow tip -->
+  <polyline
+    points="147,56 152,60 147,64"
+    fill="none" stroke="#FF9900" stroke-width="2.8"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
