@@ -23,15 +23,15 @@
   --bg-card:  #ffffff;
   --bg-nav:   #e6edf4;
   --bg-input: #f4f8fb;
-  --bd:       rgba(0,0,0,0.09);
-  --bd-faint: rgba(0,0,0,0.05);
-  --ch:  #0f1e2c;
-  --cb:  #2d4a5e;
-  --cs:  #3d6070;
-  --cd:  #5a7a90;
-  --cf:  #8baec4;
-  --clo: #4a7090;
-  --cin: #1a2d3e;
+  --bd:       rgba(0,0,0,0.10);
+  --bd-faint: rgba(0,0,0,0.06);
+  --ch:  #0f1e2c;   /* headings — near black  */
+  --cb:  #2d4a5e;   /* body text — dark blue-grey */
+  --cs:  #3d6070;   /* secondary — readable */
+  --cd:  #5a7a90;   /* dim — still readable */
+  --cf:  #7a9db0;   /* faint — subtle but visible */
+  --clo: #2e5a7a;   /* logo/wordmark — clear on light bg */
+  --cin: #1a2d3e;   /* input text */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

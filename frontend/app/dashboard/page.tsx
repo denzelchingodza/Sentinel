@@ -187,7 +187,7 @@ export default function Dashboard() {
                 stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
               <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)", letterSpacing: "0.04em" }}>Sentinel</span>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)", letterSpacing: "0.04em" }}>Sentinel</span>
           </Link>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <span style={{ fontSize: 11, color: "var(--cf)" }}>{timeAgo(lastRefresh.toISOString())}</span>

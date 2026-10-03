@@ -175,7 +175,7 @@ export default function AuthPage() {
                 stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
               <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)", letterSpacing: "0.04em" }}>Sentinel</span>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)", letterSpacing: "0.04em" }}>Sentinel</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <ThemeToggle style={{ padding: "4px 8px", fontSize: 11, gap: 5, width: "auto" }} />
@@ -206,7 +206,7 @@ export default function AuthPage() {
                   stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
                 <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)", letterSpacing: "0.04em" }}>Sentinel</span>
+              <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)", letterSpacing: "0.04em" }}>Sentinel</span>
             </div>
             <Link href="/" style={{ fontSize: 11, color: "var(--cf)", textDecoration: "none" }}>Home</Link>
           </div>

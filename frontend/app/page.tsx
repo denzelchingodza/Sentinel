@@ -104,7 +104,7 @@ export default function Home() {
           border-radius: 7px;
           text-decoration: none;
           font-size: 13.5px;
-          color: #8baec4;
+          color: var(--cs);
           transition: background 0.15s ease, color 0.15s ease;
           cursor: pointer;
           border: none;
@@ -112,7 +112,7 @@ export default function Home() {
           width: 100%;
           text-align: left;
         }
-        .menu-item:hover { background: var(--bd-faint); color: #dce6f0; }
+        .menu-item:hover { background: var(--bd); color: var(--ch); }
       `}</style>
 
       <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--ch)", fontFamily: "system-ui, -apple-system, sans-serif" }}>
@@ -122,7 +122,7 @@ export default function Home() {
           {/* Left: wordmark */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <ShieldIcon />
-            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)", letterSpacing: "0.04em" }}>Sentinel</span>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)", letterSpacing: "0.04em" }}>Sentinel</span>
           </div>
 
           {/* Right: wordmark + hamburger */}
@@ -183,7 +183,7 @@ export default function Home() {
           <div style={{ paddingBottom: 40, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40 }}>
             <div>
               <h1 data-reveal data-delay="0"
-                style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(36px, 5.5vw, 56px)", fontWeight: 400, lineHeight: 1.05, letterSpacing: "-0.01em", color: "#fff", margin: "0 0 16px" }}>
+                style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(36px, 5.5vw, 56px)", fontWeight: 400, lineHeight: 1.05, letterSpacing: "-0.01em", color: "var(--ch)", margin: "0 0 16px" }}>
                 URL monitoring<br />on AWS.
               </h1>
               <p data-reveal data-delay="80"
@@ -296,7 +296,7 @@ export default function Home() {
                   stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
                 <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontWeight: 600, fontSize: 12, color: "var(--cf)" }}>Sentinel</span>
+              <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)" }}>Sentinel</span>
             </div>
             <p style={{ fontSize: 12, color: "var(--cs)", lineHeight: 1.7, margin: "0 0 16px", maxWidth: 300 }}>
               URL monitoring built on AWS. Checks every 60 seconds, alerts on downtime. A personal project by Denzel Chingodza.
