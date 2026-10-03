@@ -90,7 +90,7 @@ export default function Home() {
           <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
         </div>
 
-        <main style={{ padding: "20px 48px 80px" }}>
+        <main className="page-pad" style={{ padding: "20px 48px 80px" }}>
 
           {/* HERO */}
           <div style={{ paddingBottom: 40, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40 }}>
@@ -107,7 +107,7 @@ export default function Home() {
           </div>
 
           {/* STAGGERED CARD GRID */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="card-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
 
             {/* LEFT COLUMN */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -146,7 +146,7 @@ export default function Home() {
             </div>
 
             {/* RIGHT COLUMN — offset */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 56 }}>
+            <div className="card-right-col" style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 56 }}>
 
               <div data-reveal data-delay="100" className="ch" style={CARD}>
                 <h2 style={HEADING}>AWS.<br />End to end.</h2>
@@ -201,7 +201,7 @@ export default function Home() {
 
         </main>
 
-        <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "40px 48px 32px", display: "grid", gridTemplateColumns: "1fr auto", gap: 40 }}>
+        <footer className="footer-pad footer-grid" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "40px 48px 32px", display: "grid", gridTemplateColumns: "1fr auto", gap: 40 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none">

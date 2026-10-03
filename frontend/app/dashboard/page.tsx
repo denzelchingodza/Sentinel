@@ -180,7 +180,7 @@ export default function Dashboard() {
       <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
         {/* Nav */}
-        <nav style={{ background: "#050b14", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+        <nav className="nav-pad" style={{ background: "#050b14", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
               <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
@@ -209,7 +209,7 @@ export default function Dashboard() {
           </div>
         </nav>
 
-        <main style={{ padding: "28px 48px 80px" }}>
+        <main className="page-pad" style={{ padding: "28px 48px 80px" }}>
 
           {/* Error banner */}
           {error && (
@@ -259,7 +259,7 @@ export default function Dashboard() {
           )}
 
           {/* Stat cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 20 }}>
+          <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 20 }}>
             {[
               { label: "Total",        value: monitors.length,                          accent: "rgba(255,255,255,0.06)", color: "#dce6f0" },
               { label: "Online",       value: upCount,                                  accent: upCount > 0 ? "rgba(34,197,94,0.4)" : "rgba(255,255,255,0.06)", color: upCount > 0 ? "#22c55e" : "#dce6f0" },
@@ -280,8 +280,8 @@ export default function Dashboard() {
             </div>
           ) : (
             <>
-              {/* Column headers */}
-              <div style={{ display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto", alignItems: "center", gap: "0 16px", padding: "6px 18px", marginBottom: 6 }}>
+              {/* Desktop column headers */}
+              <div className="mon-table-head" style={{ display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto", alignItems: "center", gap: "0 16px", padding: "6px 18px", marginBottom: 6 }}>
                 {["", "Monitor", "Uptime (24h)", "Response", "Status", "Checked", ""].map((h, i) => (
                   <span key={i} style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700, textAlign: i >= 2 ? "right" : "left" }}>{h}</span>
                 ))}
@@ -296,57 +296,87 @@ export default function Dashboard() {
                     : m.lastResponseTime < 500  ? "#22c55e"
                     : m.lastResponseTime < 2000 ? "#f59e0b"
                     : "#ef4444";
+                  const deleteActions = confirmDelete === m.id ? (
+                    <div style={{ display: "flex", gap: 4 }}>
+                      <button onClick={() => deleteMonitor(m.id)}
+                        style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#9b7070", padding: "3px 8px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
+                        Remove
+                      </button>
+                      <button onClick={() => setConfirmDelete(null)}
+                        style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#4a6a80", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setConfirmDelete(m.id)}
+                      style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#3d607a", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      ✕
+                    </button>
+                  );
                   return (
-                    <div key={m.id} style={{
-                      background: "#0c1520",
-                      border: `1px solid ${isDown ? "rgba(239,68,68,0.25)" : "rgba(255,255,255,0.05)"}`,
-                      borderRadius: 10, padding: "14px 18px",
-                      display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto",
-                      alignItems: "center", gap: "0 16px",
-                    }}>
-                      <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "rgba(255,255,255,0.08)", flexShrink: 0 }} />
-                      <div style={{ overflow: "hidden" }}>
-                        <div style={{ fontWeight: 600, fontSize: 14, color: "#dce6f0", marginBottom: 2 }}>{m.name}</div>
-                        <div style={{ fontSize: 11, color: "#3d607a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d607a" }}>—</span>}
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: msColor }}>
-                          {m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}
-                        </span>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#3d607a" }}>
-                          {m.lastStatus}
-                        </span>
-                      </div>
-                      <div style={{ textAlign: "right", fontSize: 11, color: "#3d607a" }}>{timeAgo(m.lastChecked)}</div>
-                      {confirmDelete === m.id ? (
-                        <div style={{ display: "flex", gap: 4 }}>
-                          <button onClick={() => deleteMonitor(m.id)}
-                            style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#9b7070", padding: "3px 8px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
-                            Remove
-                          </button>
-                          <button onClick={() => setConfirmDelete(null)}
-                            style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#4a6a80", padding: "3px 7px", borderRadius: 5, cursor: "pointer", fontSize: 11 }}>
-                            No
-                          </button>
+                    <div key={m.id} style={{ background: "#0c1520", border: `1px solid ${isDown ? "rgba(239,68,68,0.25)" : "rgba(255,255,255,0.05)"}`, borderRadius: 10 }}>
+                      {/* Desktop row */}
+                      <div className="mon-cols" style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto", alignItems: "center", gap: "0 16px" }}>
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "rgba(255,255,255,0.08)", flexShrink: 0 }} />
+                        <div style={{ overflow: "hidden" }}>
+                          <div style={{ fontWeight: 600, fontSize: 14, color: "#dce6f0", marginBottom: 2 }}>{m.name}</div>
+                          <div style={{ fontSize: 11, color: "#3d607a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
                         </div>
-                      ) : (
-                        <button onClick={() => setConfirmDelete(m.id)}
-                          style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "#3d607a", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          ✕
-                        </button>
-                      )}
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                          {a ? <UptimeBar uptime={a.uptime} /> : <span style={{ fontSize: 12, color: "#3d607a" }}>—</span>}
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <span style={{ fontSize: 14, fontWeight: 600, color: msColor }}>
+                            {m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}
+                          </span>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#3d607a" }}>
+                            {m.lastStatus}
+                          </span>
+                        </div>
+                        <div style={{ textAlign: "right", fontSize: 11, color: "#3d607a" }}>{timeAgo(m.lastChecked)}</div>
+                        {deleteActions}
+                      </div>
+                      {/* Mobile card */}
+                      <div className="mon-mobile" style={{ display: "none", padding: "14px 16px", flexDirection: "column", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "rgba(255,255,255,0.08)", flexShrink: 0 }} />
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: 14, color: "#dce6f0" }}>{m.name}</div>
+                              <div style={{ fontSize: 10, color: "#3d607a", marginTop: 2 }}>{m.url}</div>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#3d607a" }}>
+                            {m.lastStatus}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{ display: "flex", gap: 16 }}>
+                            <div>
+                              <div style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Response</div>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: msColor }}>{m.lastResponseTime !== null ? `${m.lastResponseTime}ms` : "—"}</span>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Checked</div>
+                              <span style={{ fontSize: 12, color: "#4a6a80" }}>{timeAgo(m.lastChecked)}</span>
+                            </div>
+                            {a && <div>
+                              <div style={{ fontSize: 9, color: "#3d607a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Uptime</div>
+                              <UptimeBar uptime={a.uptime} />
+                            </div>}
+                          </div>
+                          {deleteActions}
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
               </div>
 
               {avgUptime && (
-                <div style={{ marginTop: 10, padding: "10px 18px", background: "#0c1520", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 8, display: "flex", justifyContent: "space-between" }}>
+                <div style={{ marginTop: 10, padding: "10px 18px", background: "#0c1520", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
                   <span style={{ fontSize: 12, color: "#3d607a" }}>{monitors.length} monitor{monitors.length !== 1 ? "s" : ""} · checks every 60s</span>
                   <span style={{ fontSize: 12, color: "#3d607a" }}>avg uptime <span style={{ color: "#22c55e", fontWeight: 600 }}>{avgUptime}%</span></span>
                 </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getSession, signOut, changePassword, deleteAccount } from "../../lib/cognito";
+import { getSession, signOut, signIn, changePassword, deleteAccount } from "../../lib/cognito";
 
 const INPUT: React.CSSProperties = {
   width: "100%",
@@ -66,9 +66,12 @@ export default function AccountPage() {
   const [pwSuccess, setPwSuccess]     = useState(false);
 
   // Delete account
-  const [deleteStep, setDeleteStep]   = useState<"idle" | "confirm">("idle");
+  const [deleteStep, setDeleteStep]     = useState<"idle" | "confirm">("idle");
+  const [deletePw, setDeletePw]         = useState("");
+  const [showDeletePw, setShowDeletePw] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError]   = useState<string | null>(null);
+  const [byeVisible, setByeVisible]     = useState(false);
 
   useEffect(() => {
     getSession().then((session) => {
@@ -97,11 +100,18 @@ export default function AccountPage() {
   };
 
   const handleDeleteAccount = async () => {
+    if (!deletePw || !email) return;
     setDeleteLoading(true); setDeleteError(null);
     try {
-      await deleteAccount(); signOut(); router.replace("/auth");
+      // Verify password first before wiping the account
+      await signIn(email, deletePw);
+      await deleteAccount();
+      signOut();
+      setByeVisible(true);
+      setTimeout(() => router.replace("/"), 2800);
     } catch (e: unknown) {
-      setDeleteError(e instanceof Error ? e.message : "Failed to delete account.");
+      const msg = e instanceof Error ? e.message : "Failed to delete account.";
+      setDeleteError(msg.includes("Incorrect") || msg.includes("password") ? "Incorrect password." : msg);
       setDeleteLoading(false);
     }
   };
@@ -113,10 +123,19 @@ export default function AccountPage() {
   return (
     <>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');`}</style>
+
+      {/* Bye overlay */}
+      {byeVisible && (
+        <div style={{ position: "fixed", inset: 0, background: "#080f1a", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+          <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(36px, 6vw, 60px)", fontWeight: 400, color: "#dce6f0", margin: 0 }}>Take care.</h1>
+          <p style={{ fontSize: 13, color: "#4a6a80" }}>Your account has been deleted.</p>
+        </div>
+      )}
+
       <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
         {/* Nav */}
-        <nav style={{ background: "#050b14", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+        <nav className="nav-pad" style={{ background: "#050b14", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "0 48px", height: 54, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
               <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
@@ -137,7 +156,7 @@ export default function AccountPage() {
         <main style={{ padding: "36px 48px 80px" }}>
 
           {/* Profile strip — full width */}
-          <div style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div className="account-strip" style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#0f1f30", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 15, color: "#6a8fa8" }}>{initials}</span>
@@ -154,7 +173,7 @@ export default function AccountPage() {
           </div>
 
           {/* Two-column grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
+          <div className="account-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
 
             {/* LEFT — Change password */}
             <div style={CARD}>
@@ -247,20 +266,34 @@ export default function AccountPage() {
               </div>
             ) : (
               <div style={{ background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.12)", borderRadius: 10, padding: "18px 20px" }}>
-                <div style={{ fontSize: 13, color: "#8baec4", marginBottom: 6, lineHeight: 1.6 }}>
-                  This cannot be undone. Your account and all monitors will be permanently deleted.
+                <div style={{ fontSize: 13, color: "#8baec4", marginBottom: 16, lineHeight: 1.6 }}>
+                  This cannot be undone. Enter your password to confirm.
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={LABEL}>Password</label>
+                  <div style={{ position: "relative" }}>
+                    <input type={showDeletePw ? "text" : "password"} value={deletePw}
+                      onChange={(e) => setDeletePw(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleDeleteAccount()}
+                      placeholder="••••••••"
+                      style={{ ...INPUT, paddingRight: 38, borderColor: "rgba(239,68,68,0.15)" }} />
+                    <button onClick={() => setShowDeletePw((v) => !v)}
+                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: "#3d607a", display: "flex" }}>
+                      <EyeIcon open={showDeletePw} />
+                    </button>
+                  </div>
                 </div>
                 {deleteError && (
                   <div style={{ fontSize: 12, color: "#9b7070", marginBottom: 12 }}>{deleteError}</div>
                 )}
-                <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-                  <button onClick={handleDeleteAccount} disabled={deleteLoading}
-                    style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#9b7070", padding: "8px 16px", borderRadius: 7, cursor: deleteLoading ? "not-allowed" : "pointer", fontSize: 12, opacity: deleteLoading ? 0.5 : 1 }}>
-                    {deleteLoading ? "Deleting..." : "Yes, delete my account"}
-                  </button>
-                  <button onClick={() => { setDeleteStep("idle"); setDeleteError(null); }}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => { setDeleteStep("idle"); setDeleteError(null); setDeletePw(""); }}
                     style={{ background: "#FF9900", border: "none", color: "#000", padding: "8px 18px", borderRadius: 7, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
                     Cancel
+                  </button>
+                  <button onClick={handleDeleteAccount} disabled={deleteLoading || !deletePw}
+                    style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#9b7070", padding: "8px 16px", borderRadius: 7, cursor: (deleteLoading || !deletePw) ? "not-allowed" : "pointer", fontSize: 12, opacity: (deleteLoading || !deletePw) ? 0.5 : 1 }}>
+                    {deleteLoading ? "Deleting..." : "Delete my account"}
                   </button>
                 </div>
               </div>

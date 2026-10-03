@@ -3,9 +3,10 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #181b21;
-  color: #c9d1d9;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background: #080f1a;
+  color: #dce6f0;
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 @keyframes fadeUp {
@@ -37,15 +38,43 @@ body {
 .fade-in { animation: fadeIn 0.45s ease both; }
 
 /* ── Responsive utilities ─────────────────────────────────── */
+
+/* Tablet */
+@media (max-width: 900px) {
+  .auth-grid       { grid-template-columns: 1fr !important; }
+  .auth-left       { display: none !important; }
+  .auth-right      { padding: 48px 32px !important; border-right: none !important; }
+  .card-grid       { grid-template-columns: 1fr !important; }
+  .card-right-col  { margin-top: 0 !important; }
+  .account-grid    { grid-template-columns: 1fr !important; }
+  .stat-grid       { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* Mobile */
 @media (max-width: 640px) {
-  .stat-grid     { grid-template-columns: repeat(2, 1fr) !important; }
-  .mon-desktop   { display: none !important; }
-  .mon-mobile    { display: flex !important; }
-  .nav-email     { display: none !important; }
-  .nav-actions   { gap: 6px !important; }
-  .dash-padding  { padding: 16px !important; }
-  .hero-padding  { padding: 48px 20px 40px !important; }
-  .hero-title    { font-size: 28px !important; }
-  .footer-pad    { padding: 16px 20px !important; }
-  .nav-pad       { padding: 0 16px !important; }
+  /* Nav */
+  .nav-pad         { padding: 0 16px !important; }
+
+  /* Layouts */
+  .page-pad        { padding: 16px 16px 64px !important; }
+  .footer-pad      { padding: 24px 16px !important; }
+  .auth-right      { padding: 32px 20px !important; }
+
+  /* Landing hero */
+  .hero-title      { font-size: 32px !important; line-height: 1.1 !important; }
+
+  /* Stat cards */
+  .stat-grid       { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Monitor table → card view */
+  .mon-cols        { display: none !important; }
+  .mon-table-head  { display: none !important; }
+  .mon-mobile      { display: flex !important; }
+
+  /* Account */
+  .account-grid    { grid-template-columns: 1fr !important; }
+  .account-strip   { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+
+  /* Footer */
+  .footer-grid     { grid-template-columns: 1fr !important; gap: 24px !important; }
 }

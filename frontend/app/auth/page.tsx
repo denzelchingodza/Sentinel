@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   signIn, signUp, confirmSignUp,
   forgotPassword, confirmForgotPassword,
@@ -150,17 +151,20 @@ export default function AuthPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#080f1a", display: "grid", gridTemplateColumns: "1fr 1fr", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+    <div className="auth-grid" style={{ minHeight: "100vh", background: "#080f1a", display: "grid", gridTemplateColumns: "1fr 1fr", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
       {/* LEFT — context */}
-      <div style={{ padding: "48px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid rgba(255,255,255,0.04)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-              stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
-            <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+      <div className="auth-left" style={{ padding: "48px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid rgba(255,255,255,0.04)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+                stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+              <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+          </div>
+          <Link href="/" style={{ fontSize: 11, color: "#2e4a5e", textDecoration: "none" }}>Home</Link>
         </div>
 
         <div>
@@ -176,8 +180,22 @@ export default function AuthPage() {
       </div>
 
       {/* RIGHT — form */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "48px" }}>
-        <div style={{ width: "100%", maxWidth: 360 }}>
+      <div className="auth-right" style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px" }}>
+        {/* Mobile-only header */}
+        <div style={{ display: "none" }} className="auth-mobile-header">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 40 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+                  stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+                <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
+            </div>
+            <Link href="/" style={{ fontSize: 11, color: "#2e4a5e", textDecoration: "none" }}>Home</Link>
+          </div>
+        </div>
+        <div style={{ width: "100%", maxWidth: 360, margin: "0 auto" }}>
 
           <h2 style={{ fontSize: 16, fontWeight: 600, color: "#dce6f0", marginBottom: 24 }}>
             {screen === "signin"  ? "Sign in"           :
@@ -340,9 +358,15 @@ export default function AuthPage() {
           )}
 
         </div>
+        </div>
       </div>
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
+        @media (max-width: 900px) {
+          .auth-mobile-header { display: block !important; }
+        }
+      `}</style>
     </div>
   );
 }
