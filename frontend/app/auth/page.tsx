@@ -167,7 +167,7 @@ export default function AuthPage() {
     <div className="auth-grid" style={{ minHeight: "100vh", background: "var(--bg)", display: "grid", gridTemplateColumns: "1fr 1fr", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
       {/* LEFT — context */}
-      <div className="auth-left" style={{ padding: "48px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid var(--bd-faint)" }}>
+      <div className="auth-left hero-bg" style={{ padding: "48px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid var(--bd-faint)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
