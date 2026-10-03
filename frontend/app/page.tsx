@@ -3,12 +3,12 @@
 import { useEffect } from "react";
 import Link from "next/link";
 
-function ShieldIcon({ size = 18 }: { size?: number }) {
+function ShieldIcon() {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
       <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-        stroke="#4a9eff" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(74,158,255,0.08)" />
-      <path d="M9 12l2 2 4-4" stroke="#4a9eff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+      <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -32,15 +32,6 @@ const CARD: React.CSSProperties = {
   padding: "28px 28px 26px",
   display: "flex",
   flexDirection: "column",
-};
-
-const LABEL: React.CSSProperties = {
-  fontSize: 9,
-  fontWeight: 700,
-  letterSpacing: "0.2em",
-  textTransform: "uppercase" as const,
-  color: "#FF9900",
-  marginBottom: 14,
 };
 
 const BODY: React.CSSProperties = {
@@ -94,15 +85,14 @@ export default function Home() {
 
       <div style={{ minHeight: "100vh", background: "#080f1a", color: "#dce6f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
-        {/* Wordmark — blends with app */}
-        <div style={{ padding: "28px 48px", display: "flex", alignItems: "center", gap: 9 }}>
-          <ShieldIcon size={15} />
-          <span style={{ fontWeight: 600, fontSize: 13, color: "#2e4a5e", letterSpacing: "0.02em" }}>Sentinel</span>
+        <div style={{ padding: "28px 48px", display: "flex", alignItems: "center", gap: 8 }}>
+          <ShieldIcon />
+          <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
         </div>
 
         <main style={{ padding: "20px 48px 80px" }}>
 
-          {/* HERO — no button */}
+          {/* HERO */}
           <div style={{ paddingBottom: 72, maxWidth: 540 }}>
             <div data-reveal data-delay="0"
               style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#FF9900", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
@@ -126,7 +116,6 @@ export default function Home() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
               <div data-reveal data-delay="0" className="ch" style={CARD}>
-                <div style={LABEL}>Monitoring</div>
                 <h2 style={HEADING}>Your apps, checked<br />every 60 seconds.</h2>
                 <p style={BODY}>
                   Add a URL and EventBridge fires Lambda on a fixed schedule. If it goes down, SES alerts you with what failed and when. When it recovers, you hear about that too.
@@ -143,7 +132,6 @@ export default function Home() {
               </div>
 
               <div data-reveal data-delay="80" className="ch" style={CARD}>
-                <div style={LABEL}>Reliability</div>
                 <h2 style={HEADING}>Fault-tolerant<br />by design.</h2>
                 <p style={BODY}>
                   Each monitor runs in its own error boundary. SES failures fall back to an SQS queue for retry. The Lambda has a dead letter queue. One broken URL cannot affect the rest.
@@ -164,7 +152,6 @@ export default function Home() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 56 }}>
 
               <div data-reveal data-delay="100" className="ch" style={CARD}>
-                <div style={LABEL}>Infrastructure</div>
                 <h2 style={HEADING}>AWS.<br />End to end.</h2>
                 <p style={BODY}>
                   Every component runs on Amazon Web Services in af-south-1. Compute, storage, auth, email. Provisioned with Terraform.
@@ -179,12 +166,9 @@ export default function Home() {
                 </div>
               </div>
 
-              <div data-reveal data-delay="180" className="ch" style={{ ...CARD, borderColor: "rgba(74,158,255,0.08)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <div style={LABEL}>Intelligence</div>
-                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", background: "rgba(74,158,255,0.07)", border: "1px solid rgba(74,158,255,0.14)", color: "#4a9eff", borderRadius: 20, padding: "3px 10px" }}>Coming soon</span>
-                </div>
-                <h2 style={HEADING}>AI is coming<br />to Sentinel.</h2>
+              <div data-reveal data-delay="180" className="ch" style={CARD}>
+                <h2 style={{ ...HEADING, marginBottom: 6 }}>AI is coming<br />to Sentinel.</h2>
+                <span style={{ fontSize: 10, color: "#2e4a5e", letterSpacing: "0.06em", marginBottom: 14, display: "block" }}>coming soon</span>
                 <p style={{ ...BODY, marginBottom: 22 }}>
                   Monitoring tells you what happened. Intelligence will tell you why, and what is coming next.
                 </p>
@@ -195,7 +179,7 @@ export default function Home() {
                     { title: "Smart alerting", desc: "Suppress noise. Surface what actually matters." },
                   ].map((f) => (
                     <div key={f.title} style={{ display: "flex", gap: 12, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                      <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(74,158,255,0.4)", marginTop: 5, flexShrink: 0 }} />
+                      <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(74,158,255,0.25)", marginTop: 5, flexShrink: 0 }} />
                       <div>
                         <div style={{ fontSize: 12, fontWeight: 600, color: "#5a7d96", marginBottom: 2 }}>{f.title}</div>
                         <div style={{ fontSize: 11, color: "#3d607a", lineHeight: 1.7 }}>{f.desc}</div>
@@ -208,25 +192,18 @@ export default function Home() {
             </div>
           </div>
 
-          {/* CTA — blends as part of the page, not a boxed card */}
-          <div data-reveal data-delay="0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: 64, paddingTop: 52, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 40 }}>
-            <div>
-              <h2 style={{ ...HEADING, fontSize: 26, margin: "0 0 10px" }}>Your first monitor is one URL away.</h2>
-              <p style={{ ...BODY, margin: 0 }}>Free. No card required. Add a URL and you are live in under a minute.</p>
-            </div>
-            <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
-              <Link href="/auth" style={{ background: "#FF9900", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 6, padding: "11px 26px", textDecoration: "none", whiteSpace: "nowrap" }}>
-                Create account
-              </Link>
-              <Link href="/auth" style={{ background: "transparent", color: "#3d607a", fontSize: 13, border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6, padding: "10px 22px", textDecoration: "none", whiteSpace: "nowrap" }}>
-                Sign in
-              </Link>
-            </div>
+          {/* CTA — just the buttons */}
+          <div data-reveal data-delay="0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: 64, paddingTop: 48, display: "flex", justifyContent: "center", gap: 12 }}>
+            <Link href="/auth" style={{ background: "#FF9900", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 6, padding: "11px 32px", textDecoration: "none" }}>
+              Create account
+            </Link>
+            <Link href="/auth" style={{ background: "transparent", color: "#3d607a", fontSize: 13, border: "1px solid rgba(255,255,255,0.07)", borderRadius: 6, padding: "10px 28px", textDecoration: "none" }}>
+              Sign in
+            </Link>
           </div>
 
         </main>
 
-        {/* FOOTER */}
         <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "22px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <span style={{ fontSize: 11, color: "#3d607a" }}>2026 Denzel Chingodza</span>
           <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
