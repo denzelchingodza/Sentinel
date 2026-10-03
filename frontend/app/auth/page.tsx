@@ -22,10 +22,10 @@ function ShieldIcon() {
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#14161c",
-  border: "1px solid #2a2f38",
+  background: "#06111e",
+  border: "1px solid rgba(255,255,255,0.06)",
   borderRadius: 7,
-  color: "#e6edf3",
+  color: "#e8edf2",
   padding: "10px 13px",
   fontSize: 14,
   outline: "none",
@@ -33,24 +33,25 @@ const inputStyle: React.CSSProperties = {
 };
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 11,
-  color: "#6e7681",
+  fontSize: 9,
+  color: "#2a3f54",
   display: "block",
   marginBottom: 6,
   textTransform: "uppercase",
-  letterSpacing: "0.08em",
+  letterSpacing: "0.18em",
+  fontWeight: 700,
 };
 
 const btnPrimary: React.CSSProperties = {
   width: "100%",
-  background: "#4a9eff",
+  background: "#FF9900",
   border: "none",
-  color: "#fff",
+  color: "#000",
   padding: "11px",
   borderRadius: 7,
   cursor: "pointer",
-  fontSize: 14,
-  fontWeight: 600,
+  fontSize: 13,
+  fontWeight: 700,
   marginTop: 8,
 };
 
@@ -176,30 +177,30 @@ export default function AuthPage() {
 
   // Blank screen while navigating or waiting for session check — prevents any flash
   if (redirecting || !sessionChecked) {
-    return <div style={{ minHeight: "100vh", background: "#181b21" }} />;
+    return <div style={{ minHeight: "100vh", background: "#080f1a" }} />;
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#181b21", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div style={{ minHeight: "100vh", background: "#080f1a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "system-ui, -apple-system, sans-serif" }}>
       <div style={{ width: "100%", maxWidth: 380 }}>
 
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32, justifyContent: "center" }}>
           <ShieldIcon />
-          <span style={{ fontWeight: 700, fontSize: 20, color: "#e6edf3" }}>Sentinel</span>
+          <span style={{ fontWeight: 700, fontSize: 20, color: "#e8edf2" }}>Sentinel</span>
         </div>
 
         {/* Card */}
-        <div style={{ background: "#1e2228", border: "1px solid #2a2f38", borderRadius: 12, padding: "28px 28px 24px" }}>
+        <div style={{ background: "#0c1520", border: "1px solid rgba(255,255,255,0.05)", borderTop: "1px solid rgba(255,153,0,0.15)", borderRadius: 14, padding: "28px 28px 24px" }}>
 
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e6edf3", marginBottom: 4 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e8edf2", marginBottom: 4 }}>
             {screen === "signin"  ? "Sign in"             :
              screen === "signup"  ? "Create account"      :
              screen === "confirm" ? "Verify your email"   :
              screen === "forgot"  ? "Reset password"      :
                                     "Set new password"}
           </h2>
-          <p style={{ fontSize: 13, color: "#4d5562", marginBottom: 24 }}>
+          <p style={{ fontSize: 13, color: "#1e3347", marginBottom: 24 }}>
             {screen === "signin"  ? "Welcome back."                              :
              screen === "signup"  ? "Get started — it's free."                  :
              screen === "confirm" ? `Code sent to ${email}`                     :
@@ -232,7 +233,7 @@ export default function AuthPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
                   <label style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
                   <button onClick={() => { setScreen("forgot"); setError(null); setInfo(null); }}
-                    style={{ background: "none", border: "none", color: "#4a9eff", cursor: "pointer", fontSize: 12, padding: 0 }}>
+                    style={{ background: "none", border: "none", color: "#FF9900", cursor: "pointer", fontSize: 12, padding: 0, opacity: 0.7 }}>
                     Forgot password?
                   </button>
                 </div>
@@ -299,7 +300,7 @@ export default function AuthPage() {
                 {loading ? "Sending…" : "Send reset code"}
               </button>
               <button onClick={() => { setScreen("signin"); setError(null); setInfo(null); }}
-                style={{ background: "transparent", border: "none", color: "#4d5562", cursor: "pointer", fontSize: 13, marginTop: 2 }}>
+                style={{ background: "transparent", border: "none", color: "#1e3347", cursor: "pointer", fontSize: 13, marginTop: 2 }}>
                 ← Back to sign in
               </button>
             </div>
@@ -330,11 +331,11 @@ export default function AuthPage() {
 
         {/* Toggle sign in / sign up */}
         {(screen === "signin" || screen === "signup") && (
-          <p style={{ textAlign: "center", fontSize: 13, color: "#4d5562", marginTop: 18 }}>
+          <p style={{ textAlign: "center", fontSize: 13, color: "#1e3347", marginTop: 18 }}>
             {screen === "signin" ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={() => { setScreen(screen === "signin" ? "signup" : "signin"); setError(null); setInfo(null); }}
-              style={{ background: "none", border: "none", color: "#4a9eff", cursor: "pointer", fontSize: 13, fontWeight: 500, padding: 0 }}>
+              style={{ background: "none", border: "none", color: "#FF9900", cursor: "pointer", fontSize: 13, fontWeight: 600, padding: 0 }}>
               {screen === "signin" ? "Sign up" : "Sign in"}
             </button>
           </p>
