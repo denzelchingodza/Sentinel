@@ -45,6 +45,11 @@ resource "aws_iam_role_policy" "lambda_policy" {
         Resource = "*"
       },
       {
+        Effect   = "Allow"
+        Action   = ["sqs:SendMessage"]
+        Resource = var.alert_queue_arn
+      },
+      {
         Effect = "Allow"
         Action = [
           "logs:CreateLogGroup",
@@ -80,7 +85,12 @@ resource "aws_lambda_function" "monitor" {
       INCIDENTS_TABLE  = var.incidents_table_name
       ALERT_EMAIL      = var.alert_email
       AWS_SES_REGION   = "af-south-1"
+      ALERT_QUEUE_URL  = var.alert_queue_url
     }
+  }
+
+  dead_letter_config {
+    target_arn = var.alert_queue_arn
   }
 }
 
