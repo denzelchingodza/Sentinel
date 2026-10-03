@@ -84,7 +84,7 @@ body {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  z-index: -1;
 }
 /* blue layer */
 .hero-bg::before {
@@ -106,10 +106,10 @@ body {
 }
 
 [data-theme="light"] .hero-bg::before {
-  background: linear-gradient(165deg, #bcd9f2 0%, #d0e8f8 30%, #eaf4fc 60%, transparent 90%);
+  background: radial-gradient(ellipse 90% 60% at 5% 0%, rgba(100,170,240,0.28) 0%, transparent 75%);
 }
 [data-theme="light"] .hero-bg::after {
-  background: linear-gradient(165deg, #d4c0f5 0%, #e4d4f8 30%, #f4eefb 60%, transparent 90%);
+  background: radial-gradient(ellipse 90% 60% at 5% 0%, rgba(160,90,255,0.18) 0%, transparent 75%);
 }
 
 /* ── AWS badge theming ────────────────────────────────────── */
