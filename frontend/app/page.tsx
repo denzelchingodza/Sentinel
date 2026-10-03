@@ -187,7 +187,7 @@ export default function Home() {
         <main className="page-pad" style={{ padding: "20px 48px 80px" }}>
 
           {/* HERO */}
-          <div style={{ paddingBottom: 40, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40 }}>
+          <div className="hero-bg" style={{ paddingBottom: 40, margin: "0 -48px", padding: "40px 48px 48px", borderRadius: 16, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40 }}>
             <div>
               <h1 data-reveal data-delay="0"
                 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(36px, 5.5vw, 56px)", fontWeight: 400, lineHeight: 1.05, letterSpacing: "-0.01em", color: "var(--ch)", margin: "0 0 16px" }}>

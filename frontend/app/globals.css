@@ -72,6 +72,14 @@ body {
 .fade-up { animation: fadeUp 0.6s ease both; }
 .fade-in { animation: fadeIn 0.45s ease both; }
 
+/* ── Hero background gradient ─────────────────────────────── */
+.hero-bg {
+  background-image: radial-gradient(ellipse 90% 55% at 5% 0%, rgba(100,170,230,0.09) 0%, transparent 70%);
+}
+[data-theme="light"] .hero-bg {
+  background-image: linear-gradient(170deg, #c2dff0 0%, #d8ecf8 20%, #eaf4fb 45%, var(--bg) 80%);
+}
+
 /* ── AWS badge theming ────────────────────────────────────── */
 .aws-badge-light { opacity: 0; transition: opacity 0.25s ease; }
 .aws-badge-dark  { opacity: 1; transition: opacity 0.25s ease; }
