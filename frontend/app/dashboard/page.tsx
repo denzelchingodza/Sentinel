@@ -51,7 +51,7 @@ function timeAgo(iso: string | null): string {
 
 function UptimeBar({ uptime }: { uptime: string }) {
   const pct = parseFloat(uptime);
-  const color = pct >= 99 ? "#16a34a" : pct >= 95 ? "#d97706" : "#dc2626";
+  const color = pct >= 99 ? "#22c55e" : pct >= 95 ? "#f59e0b" : "#ef4444";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
       <div style={{ width: 72, height: 3, background: "#2a2f38", borderRadius: 2, overflow: "hidden" }}>
@@ -250,7 +250,7 @@ export default function Dashboard() {
             {showForm ? "Cancel" : "+ Monitor"}
           </button>
           <button onClick={() => { setShowDeleteAccount(true); setDeleteAccountError(null); }}
-            style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
+            style={{ background: "transparent", border: "1px solid #2a2f38", color: "#4d5562", padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
             Delete account
           </button>
           <button onClick={handleSignOut}
@@ -263,7 +263,7 @@ export default function Dashboard() {
       <main className="dash-padding" style={{ maxWidth: 960, margin: "0 auto", padding: "24px" }}>
 
         {error && (
-          <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "10px 14px", marginBottom: 16, color: "#f87171", fontSize: 13 }}>
+          <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "10px 14px 10px 16px", marginBottom: 16, color: "#8b949e", fontSize: 13 }}>
             {error}
           </div>
         )}
@@ -313,14 +313,14 @@ export default function Dashboard() {
         {/* Stat cards */}
         <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
           {[
-            { label: "Total",        value: loading ? "—" : monitors.length,            color: undefined },
-            { label: "Online",       value: loading ? "—" : upCount,                    color: upCount > 0 && !loading ? "#22c55e" : undefined },
-            { label: "Down",         value: loading ? "—" : downCount,                  color: downCount > 0 ? "#ef4444" : undefined },
-            { label: "Avg response", value: loading ? "—" : avgMs ? `${avgMs}ms` : "—", color: undefined },
+            { label: "Total",        value: loading ? "—" : monitors.length,            color: undefined,                                          accent: "#2a2f38" },
+            { label: "Online",       value: loading ? "—" : upCount,                    color: upCount > 0 && !loading ? "#22c55e" : undefined,     accent: upCount > 0 && !loading ? "rgba(34,197,94,0.45)" : "#2a2f38" },
+            { label: "Down",         value: loading ? "—" : downCount,                  color: downCount > 0 ? "#ef4444" : undefined,               accent: downCount > 0 ? "rgba(239,68,68,0.45)" : "#2a2f38" },
+            { label: "Avg response", value: loading ? "—" : avgMs ? `${avgMs}ms` : "—", color: undefined,                                          accent: "#2a2f38" },
           ].map((c) => (
-            <div key={c.label} style={{ background: "#1e2228", border: "1px solid #2a2f38", borderRadius: 10, padding: "16px 18px" }}>
-              <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{c.label}</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: c.color || "#e6edf3" }}>{c.value}</div>
+            <div key={c.label} style={{ background: "#1e2228", border: "1px solid #2a2f38", borderLeft: `2px solid ${c.accent}`, borderRadius: 10, padding: "16px 18px" }}>
+              <div style={{ fontSize: 10, color: "#3d4450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{c.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: c.color || "#e6edf3", letterSpacing: "-0.02em" }}>{c.value}</div>
             </div>
           ))}
         </div>
@@ -358,10 +358,7 @@ export default function Dashboard() {
                       display: "grid", gridTemplateColumns: "20px 1fr 132px 100px 90px 60px auto",
                       alignItems: "center", gap: "0 14px",
                     }}>
-                      <div style={{ position: "relative", width: 9, height: 9 }}>
-                        {isUp && <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "ping 2.5s ease-out infinite" }} />}
-                        <div style={{ position: "relative", width: 9, height: 9, borderRadius: "50%", background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38" }} />
-                      </div>
+                      <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38", flexShrink: 0 }} />
                       <div style={{ overflow: "hidden" }}>
                         <div style={{ fontWeight: 600, fontSize: 14, color: "#e6edf3", marginBottom: 1 }}>{m.name}</div>
                         <div style={{ fontSize: 11, color: "#3d4450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.url}</div>
@@ -375,13 +372,7 @@ export default function Dashboard() {
                         </span>
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        <span style={{
-                          display: "inline-block", padding: "2px 10px", borderRadius: 20,
-                          fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
-                          background: isUp ? "rgba(34,197,94,0.1)" : isDown ? "rgba(239,68,68,0.1)" : "rgba(74,85,98,0.2)",
-                          color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#4d5562",
-                          border: `1px solid ${isUp ? "rgba(34,197,94,0.25)" : isDown ? "rgba(239,68,68,0.25)" : "#2a2f38"}`,
-                        }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em", color: isUp ? "#22c55e" : isDown ? "#ef4444" : "#3d4450" }}>
                           {m.lastStatus}
                         </span>
                       </div>
@@ -389,7 +380,7 @@ export default function Dashboard() {
                       {confirmDelete === m.id ? (
                         <div style={{ display: "flex", gap: 4 }}>
                           <button onClick={() => deleteMonitor(m.id)}
-                            style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", padding: "3px 8px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
+                            style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#9b7070", padding: "3px 8px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
                             Remove
                           </button>
                           <button onClick={() => setConfirmDelete(null)}
@@ -427,10 +418,7 @@ export default function Dashboard() {
                   }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ position: "relative", width: 9, height: 9, flexShrink: 0 }}>
-                          {isUp && <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "ping 2.5s ease-out infinite" }} />}
-                          <div style={{ position: "relative", width: 9, height: 9, borderRadius: "50%", background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38" }} />
-                        </div>
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "#2a2f38", flexShrink: 0 }} />
                         <div>
                           <div style={{ fontWeight: 600, fontSize: 14, color: "#e6edf3" }}>{m.name}</div>
                           <div style={{ fontSize: 11, color: "#3d4450" }}>{m.url}</div>
@@ -439,7 +427,7 @@ export default function Dashboard() {
                       {confirmDelete === m.id ? (
                         <div style={{ display: "flex", gap: 4 }}>
                           <button onClick={() => deleteMonitor(m.id)}
-                            style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                            style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#9b7070", padding: "4px 10px", borderRadius: 5, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
                             Remove
                           </button>
                           <button onClick={() => setConfirmDelete(null)}
@@ -494,18 +482,18 @@ export default function Dashboard() {
               This will permanently delete your account and all your monitors. This cannot be undone.
             </p>
             {deleteAccountError && (
-              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 7, padding: "9px 12px", marginBottom: 16, fontSize: 13, color: "#f87171" }}>
+              <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
                 {deleteAccountError}
               </div>
             )}
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={handleDeleteAccount} disabled={deleteAccountLoading}
-                style={{ flex: 1, background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.35)", color: "#f87171", padding: "10px", borderRadius: 7, cursor: deleteAccountLoading ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 600, opacity: deleteAccountLoading ? 0.6 : 1 }}>
-                {deleteAccountLoading ? "Deleting…" : "Yes, delete my account"}
-              </button>
               <button onClick={() => setShowDeleteAccount(false)} disabled={deleteAccountLoading}
-                style={{ flex: 1, background: "transparent", border: "1px solid #2a2f38", color: "#6e7681", padding: "10px", borderRadius: 7, cursor: "pointer", fontSize: 13 }}>
+                style={{ flex: 1, background: "#4a9eff", border: "none", color: "#fff", padding: "10px", borderRadius: 7, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
                 Cancel
+              </button>
+              <button onClick={handleDeleteAccount} disabled={deleteAccountLoading}
+                style={{ flex: 1, background: "transparent", border: "none", color: "#6b4444", padding: "10px", borderRadius: 7, cursor: deleteAccountLoading ? "not-allowed" : "pointer", fontSize: 13, opacity: deleteAccountLoading ? 0.5 : 1 }}>
+                {deleteAccountLoading ? "Deleting…" : "Delete account"}
               </button>
             </div>
           </div>

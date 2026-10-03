@@ -208,13 +208,13 @@ export default function AuthPage() {
           </p>
 
           {error && (
-            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 7, padding: "9px 12px", marginBottom: 16, fontSize: 13, color: "#f87171" }}>
+            <div style={{ borderLeft: "2px solid rgba(239,68,68,0.5)", background: "rgba(239,68,68,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
               {error}
             </div>
           )}
 
           {info && (
-            <div style={{ background: "rgba(74,158,255,0.07)", border: "1px solid rgba(74,158,255,0.2)", borderRadius: 7, padding: "9px 12px", marginBottom: 16, fontSize: 13, color: "#93c5fd" }}>
+            <div style={{ borderLeft: "2px solid rgba(74,158,255,0.45)", background: "rgba(74,158,255,0.04)", borderRadius: "0 6px 6px 0", padding: "9px 12px 9px 14px", marginBottom: 16, fontSize: 13, color: "#8b949e" }}>
               {info}
             </div>
           )}
