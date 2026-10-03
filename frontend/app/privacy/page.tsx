@@ -1,160 +1,81 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy",
-  description: "Privacy policy for Sentinel — how we handle your monitoring data.",
+  title: "Privacy · Sentinel",
+  description: "What Sentinel stores and why.",
 };
-
-const BLUE = "#4a9eff";
-const BG = "#0f1117";
-const TEXT = "#e6edf3";
-const SUB = "#6e7681";
-const DIM = "#3d4450";
-const BORDER = "#1a1f29";
 
 export default function PrivacyPage() {
   return (
-    <div style={{ minHeight: "100vh", background: BG, fontFamily: "var(--font-geist-sans), system-ui, sans-serif", color: TEXT }}>
+    <div style={{ minHeight: "100vh", background: "#080f1a", fontFamily: "system-ui, -apple-system, sans-serif", color: "#dce6f0" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');`}</style>
 
-      {/* Nav */}
-      <nav
-        style={{
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-          padding: "18px 40px", borderBottom: `1px solid ${BORDER}`,
-          background: "#0b0d13",
-        }}
-      >
+      <div style={{ padding: "28px 48px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <svg width={14} height={14} viewBox="0 0 24 24" fill="none">
             <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
-              stroke={BLUE} strokeWidth="1.5" strokeLinejoin="round" fill="rgba(74,158,255,0.08)" />
-            <path d="M9 12l2 2 4-4" stroke={BLUE} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+            <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span style={{ fontSize: 14, fontWeight: 700, color: TEXT }}>Sentinel</span>
+          <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e", letterSpacing: "0.04em" }}>Sentinel</span>
         </div>
-        <Link
-          href="/"
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase",
-            color: SUB, textDecoration: "none",
-          }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
-          Back
-        </Link>
-      </nav>
-
-      {/* Content */}
-      <div style={{ maxWidth: 660, margin: "0 auto", padding: "64px 32px 100px" }}>
-        <p style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase", color: BLUE, opacity: 0.6, marginBottom: 14 }}>
-          Legal
-        </p>
-        <h1 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 600, letterSpacing: "-0.02em", marginBottom: 8 }}>
-          Privacy Policy
-        </h1>
-        <p style={{ fontSize: 12, color: DIM, marginBottom: 52 }}>Last updated: September 2026</p>
-
-        <Section title="Overview">
-          Sentinel monitors your service URLs and sends email alerts when they go down or recover.
-          We collect the minimum data necessary to make this work and do not share or sell anything.
-        </Section>
-
-        <Section title="Data we store">
-          When you create an account, we store your email address and the URLs you add for monitoring.
-          Uptime check results (status codes, response times, timestamps) are stored in DynamoDB to
-          power your dashboard history. We do not store the content of your services.
-        </Section>
-
-        <Section title="Authentication">
-          Accounts are managed via Amazon Cognito. Your password is never stored by Sentinel — Cognito
-          handles hashing and security. We store only your Cognito user ID and email.
-        </Section>
-
-        <Section title="Alerting">
-          Alert emails are sent via Amazon SES when a monitored URL changes status (down or recovered).
-          We store your email address solely for this purpose. You can delete your account at any time
-          to stop all alerts and remove your data.
-        </Section>
-
-        <Section title="Analytics">
-          This site may use Vercel Analytics to collect anonymised page view and performance metrics.
-          No cookies are used. No personal identifiers are collected. Vercel&apos;s{" "}
-          <A href="https://vercel.com/legal/privacy-policy">privacy policy</A> governs this data.
-        </Section>
-
-        <Section title="Infrastructure">
-          Sentinel runs entirely on Amazon Web Services (AWS). All compute, storage, authentication,
-          and email delivery is handled by AWS services in the{" "}
-          <strong style={{ color: "#a8b3c1" }}>af-south-1 (Cape Town)</strong> region.
-          Infrastructure is provisioned and version-controlled with Terraform — there are no manually
-          configured servers. AWS is responsible for the physical security, availability, and
-          redundancy of the underlying infrastructure. You can read Amazon&apos;s security and
-          compliance documentation at{" "}
-          <A href="https://aws.amazon.com/compliance/">aws.amazon.com/compliance</A>.
-        </Section>
-
-        <Section title="Third-party services">
-          <ul style={{ paddingLeft: 20, lineHeight: 2.1, color: SUB, fontSize: 14 }}>
-            <li><strong style={{ color: "#FF9900" }}>AWS Lambda</strong> — runs uptime checks every 60 seconds</li>
-            <li><strong style={{ color: "#FF9900" }}>Amazon DynamoDB</strong> — stores monitors, check results, and incidents</li>
-            <li><strong style={{ color: "#FF9900" }}>Amazon SES</strong> — sends alert and recovery emails</li>
-            <li><strong style={{ color: "#FF9900" }}>Amazon Cognito</strong> — manages user accounts and authentication</li>
-            <li><strong style={{ color: "#FF9900" }}>Amazon API Gateway</strong> — API routing and JWT verification</li>
-            <li><strong style={{ color: "#FF9900" }}>Amazon SQS</strong> — queues failed alert notifications for retry</li>
-            <li><strong style={{ color: "#a8b3c1" }}>Vercel</strong> — hosts the frontend</li>
-          </ul>
-        </Section>
-
-        <Section title="Data retention">
-          Your account data, monitors, and check history are retained while your account exists.
-          Deleting your account removes all associated data. We do not retain backups of user data
-          beyond our hosting provider&apos;s standard retention windows.
-        </Section>
-
-        <div style={{ borderTop: `1px solid ${BORDER}`, margin: "40px 0" }} />
-
-        <Section title="Contact">
-          Questions about this policy?{" "}
-          <A href="mailto:denzel.chingodza@icloud.com">denzel.chingodza@icloud.com</A>
-        </Section>
+        <Link href="/" style={{ fontSize: 11, color: "#2e4a5e", textDecoration: "none" }}>Back</Link>
       </div>
 
-      {/* Footer */}
-      <footer
-        style={{
-          borderTop: `1px solid ${BORDER}`, background: "#0b0d13",
-          padding: "18px 40px", display: "flex", justifyContent: "space-between",
-          alignItems: "center", fontSize: 12, color: DIM,
-        }}
-      >
-        <span>© 2026 Denzel Chingodza</span>
-        <Link href="/" style={{ color: DIM, textDecoration: "none", fontSize: 12 }}>Sentinel</Link>
+      <div style={{ maxWidth: 600, padding: "48px 48px 100px" }}>
+
+        <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 400, letterSpacing: "-0.01em", color: "#dce6f0", margin: "0 0 12px", lineHeight: 1.1 }}>
+          Privacy
+        </h1>
+        <p style={{ fontSize: 13, color: "#3d607a", marginBottom: 52, lineHeight: 1.7 }}>
+          Sentinel is a personal project, not a company. This page is just an honest explanation of what gets stored when you use it.
+        </p>
+
+        <Block title="What I store">
+          Your email address and the URLs you add for monitoring. That is it. Check results — status codes, response times, timestamps — are stored in DynamoDB to power your dashboard history. I do not store anything about the content of your services.
+        </Block>
+
+        <Block title="Passwords">
+          Your password is never stored by Sentinel directly. Authentication runs through Amazon Cognito, which handles all the hashing and security. I only see your user ID and email.
+        </Block>
+
+        <Block title="Alert emails">
+          When a URL you are monitoring goes down or recovers, SES sends you an email. Your email address exists in the system for this reason only. Deleting your account removes it along with everything else.
+        </Block>
+
+        <Block title="Infrastructure">
+          Everything runs on AWS in the af-south-1 (Cape Town) region — Lambda, DynamoDB, SES, Cognito, API Gateway, SQS, EventBridge. The frontend is hosted on Vercel. The infrastructure is provisioned with Terraform.
+        </Block>
+
+        <Block title="Analytics">
+          Vercel may collect anonymised page view metrics. No cookies, no personal identifiers.
+        </Block>
+
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.04)", margin: "40px 0" }} />
+
+        <p style={{ fontSize: 13, color: "#3d607a", lineHeight: 1.8 }}>
+          Questions? <a href="mailto:denzel.chingodza@icloud.com" style={{ color: "#5a7d96", textDecoration: "none", borderBottom: "1px solid rgba(90,125,150,0.3)", paddingBottom: 1 }}>denzel.chingodza@icloud.com</a>
+        </p>
+
+      </div>
+
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "22px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <span style={{ fontSize: 11, color: "#3d607a" }}>2026 Denzel Chingodza</span>
+        <div style={{ display: "flex", gap: 20 }}>
+          <Link href="/" style={{ fontSize: 11, color: "#3d607a", textDecoration: "none" }}>Home</Link>
+          <span style={{ fontSize: 11, color: "#2e4a5e" }}>Serverless · af-south-1</span>
+        </div>
       </footer>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: 36 }}>
-      <h2 style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: DIM, marginBottom: 10, fontWeight: 600 }}>
-        {title}
-      </h2>
-      <div style={{ fontSize: 14, color: SUB, lineHeight: 1.85 }}>{children}</div>
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#2e4a5e", marginBottom: 10 }}>{title}</div>
+      <p style={{ fontSize: 13, color: "#5a7d96", lineHeight: 1.85, margin: 0 }}>{children}</p>
     </div>
-  );
-}
-
-function A({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer"
-      style={{ color: BLUE, textDecoration: "none", borderBottom: "1px solid rgba(74,158,255,0.3)", paddingBottom: 1 }}>
-      {children}
-    </a>
   );
 }

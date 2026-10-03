@@ -201,11 +201,27 @@ export default function Home() {
 
         </main>
 
-        <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "22px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <span style={{ fontSize: 11, color: "#3d607a" }}>2026 Denzel Chingodza</span>
-          <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-            <Link href="/privacy" style={{ fontSize: 11, color: "#3d607a", textDecoration: "none" }}>Privacy</Link>
-            <span style={{ fontSize: 11, color: "#2e4a5e" }}>Serverless · af-south-1</span>
+        <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "40px 48px 32px", display: "grid", gridTemplateColumns: "1fr auto", gap: 40 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <svg width={13} height={13} viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+                  stroke="#2e4a5e" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
+                <path d="M9 12l2 2 4-4" stroke="#2e4a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontWeight: 600, fontSize: 12, color: "#2e4a5e" }}>Sentinel</span>
+            </div>
+            <p style={{ fontSize: 12, color: "#2a3f52", lineHeight: 1.7, margin: "0 0 16px", maxWidth: 300 }}>
+              URL monitoring built on AWS. Checks every 60 seconds, alerts on downtime. A personal project by Denzel Chingodza.
+            </p>
+            <span style={{ fontSize: 11, color: "#1e3347" }}>Lambda · DynamoDB · SES · Cognito · SQS · EventBridge · af-south-1</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+              <Link href="/privacy" style={{ fontSize: 11, color: "#3d607a", textDecoration: "none" }}>Privacy</Link>
+              <a href="mailto:denzel.chingodza@icloud.com" style={{ fontSize: 11, color: "#2e4a5e", textDecoration: "none" }}>denzel.chingodza@icloud.com</a>
+            </div>
+            <span style={{ fontSize: 11, color: "#1e3347" }}>2026</span>
           </div>
         </footer>
 
