@@ -110,10 +110,10 @@ body {
 }
 
 [data-theme="light"] .hero-bg::before {
-  background: radial-gradient(ellipse 90% 60% at 5% 0%, rgba(100,170,240,0.28) 0%, transparent 75%);
+  background: radial-gradient(ellipse 100% 100% at 0% 0%, rgba(100,170,240,0.55) 0%, rgba(140,190,245,0.25) 50%, transparent 80%);
 }
 [data-theme="light"] .hero-bg::after {
-  background: radial-gradient(ellipse 90% 60% at 5% 0%, rgba(160,90,255,0.18) 0%, transparent 75%);
+  background: radial-gradient(ellipse 100% 100% at 0% 0%, rgba(160,90,255,0.45) 0%, rgba(190,140,255,0.20) 50%, transparent 80%);
 }
 
 /* ── AWS badge theming ────────────────────────────────────── */
