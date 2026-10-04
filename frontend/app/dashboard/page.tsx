@@ -161,7 +161,29 @@ export default function Dashboard() {
 
 
   if (!authChecked || loading) {
-    return <div style={{ minHeight: "100vh", background: "var(--bg)" }} />;
+    return (
+      <div className="hero-bg" style={{
+        minHeight: "100dvh", background: "var(--bg)",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20,
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        animation: "fadeIn 0.3s ease both",
+      }}>
+        <svg width={40} height={40} viewBox="0 0 24 24" fill="none" style={{ animation: "pulse 1.6s ease-in-out infinite" }}>
+          <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+            stroke="#FF9900" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(255,153,0,0.12)" />
+          <path d="M9 12l2 2 4-4" stroke="#FF9900" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span style={{ fontWeight: 600, fontSize: 15, color: "var(--clo)", letterSpacing: "0.06em" }}>Sentinel</span>
+        <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{
+              width: 5, height: 5, borderRadius: "50%", background: "#FF9900",
+              animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+            }} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   const upCount   = monitors.filter((m) => m.lastStatus === "up").length;
@@ -189,20 +211,17 @@ export default function Dashboard() {
             </svg>
             <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)", letterSpacing: "0.04em" }}>Sentinel</span>
           </Link>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "var(--cf)" }}>{timeAgo(lastRefresh.toISOString())}</span>
-            <button onClick={refresh}
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <span className="dash-time" style={{ fontSize: 11, color: "var(--cf)" }}>{timeAgo(lastRefresh.toISOString())}</span>
+            <button onClick={refresh} className="dash-refresh"
               style={{ background: "transparent", border: "1px solid var(--bd)", color: "var(--cd)", width: 30, height: 30, borderRadius: 6, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>
               ↻
             </button>
             <button onClick={() => setShowForm((v) => !v)}
-              style={{ background: showForm ? "transparent" : "#FF9900", border: showForm ? "1px solid var(--bd)" : "none", color: showForm ? "var(--cd)" : "#000", padding: "6px 16px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+              style={{ background: showForm ? "transparent" : "#FF9900", border: showForm ? "1px solid var(--bd)" : "none", color: showForm ? "var(--cd)" : "#000", padding: "6px 14px", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
               {showForm ? "Cancel" : "+ Monitor"}
             </button>
-            {/* Theme toggle */}
-            <ThemeToggle style={{ padding: "5px 8px", fontSize: 12, gap: 6, width: "auto" }} />
-
-            {/* Account avatar — obvious entry point to /account */}
+            <ThemeToggle iconOnly style={{ padding: "5px 8px", fontSize: 12, gap: 0, width: "auto" }} />
             <Link href="/account" title={userEmail ?? "Account"}
               style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--bg-card)", border: "1px solid var(--bd)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: "var(--cs)", letterSpacing: "0.04em" }}>
@@ -244,20 +263,22 @@ export default function Dashboard() {
 
           {/* Add monitor form */}
           {showForm && (
-            <div style={{ background: "var(--bg-card)", border: "1px solid var(--bd)", borderRadius: 12, padding: "20px 22px", marginBottom: 20, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
-              <div style={{ flex: "1 1 140px" }}>
-                <label style={{ fontSize: 9, color: "var(--cd)", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>Name</label>
-                <input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="My API" style={INPUT} />
+            <div className="add-form" style={{ background: "var(--bg-card)", border: "1px solid var(--bd)", borderRadius: 12, padding: "20px 22px", marginBottom: 20 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 9, color: "var(--cd)", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>Name</label>
+                  <input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="My API" style={INPUT} autoFocus />
+                </div>
+                <div>
+                  <label style={{ fontSize: 9, color: "var(--cd)", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>URL</label>
+                  <input value={formUrl} onChange={(e) => setFormUrl(e.target.value)} placeholder="https://example.com"
+                    onKeyDown={(e) => e.key === "Enter" && addMonitor()} style={INPUT} />
+                </div>
+                <button onClick={addMonitor} disabled={formLoading}
+                  style={{ background: "#FF9900", border: "none", color: "#000", padding: "11px", borderRadius: 7, cursor: formLoading ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: formLoading ? 0.6 : 1, width: "100%" }}>
+                  {formLoading ? "Adding..." : "Add monitor"}
+                </button>
               </div>
-              <div style={{ flex: "2 1 220px" }}>
-                <label style={{ fontSize: 9, color: "var(--cd)", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.16em", fontWeight: 700 }}>URL</label>
-                <input value={formUrl} onChange={(e) => setFormUrl(e.target.value)} placeholder="https://example.com"
-                  onKeyDown={(e) => e.key === "Enter" && addMonitor()} style={INPUT} />
-              </div>
-              <button onClick={addMonitor} disabled={formLoading}
-                style={{ background: "#FF9900", border: "none", color: "#000", padding: "9px 22px", borderRadius: 7, cursor: formLoading ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: formLoading ? 0.6 : 1 }}>
-                {formLoading ? "Adding..." : "Add"}
-              </button>
             </div>
           )}
 

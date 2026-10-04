@@ -14,7 +14,7 @@ function getTheme(): Theme {
   }
 }
 
-export default function ThemeToggle({ style }: { style?: React.CSSProperties }) {
+export default function ThemeToggle({ style, iconOnly }: { style?: React.CSSProperties; iconOnly?: boolean }) {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function ThemeToggle({ style }: { style?: React.CSSProperties }) 
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       )}
-      {isDark ? "Light mode" : "Dark mode"}
+      {!iconOnly && (isDark ? "Light mode" : "Dark mode")}
     </button>
   );
 }
