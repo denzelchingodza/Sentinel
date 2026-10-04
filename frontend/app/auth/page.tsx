@@ -160,11 +160,33 @@ export default function AuthPage() {
   };
 
   if (redirecting || !sessionChecked) {
-    return <div style={{ minHeight: "100vh", background: "var(--bg)" }} />;
+    return (
+      <div className="hero-bg" style={{
+        minHeight: "100dvh", background: "var(--bg)",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20,
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        animation: "fadeIn 0.3s ease both",
+      }}>
+        <svg width={40} height={40} viewBox="0 0 24 24" fill="none" style={{ animation: "pulse 1.6s ease-in-out infinite" }}>
+          <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6L12 2z"
+            stroke="#FF9900" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(255,153,0,0.12)" />
+          <path d="M9 12l2 2 4-4" stroke="#FF9900" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span style={{ fontWeight: 600, fontSize: 15, color: "var(--clo)", letterSpacing: "0.06em" }}>Sentinel</span>
+        <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{
+              width: 5, height: 5, borderRadius: "50%", background: "#FF9900",
+              animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+            }} />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="auth-grid" style={{ minHeight: "100vh", background: "var(--bg)", display: "grid", gridTemplateColumns: "1fr 1fr", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+    <div className="auth-grid" style={{ minHeight: "100dvh", background: "var(--bg)", display: "grid", gridTemplateColumns: "1fr 1fr", fontFamily: "system-ui, -apple-system, sans-serif" }}>
 
       {/* LEFT — context */}
       <div className="auth-left hero-bg" style={{ padding: "48px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid var(--bd-faint)" }}>
@@ -198,7 +220,7 @@ export default function AuthPage() {
       {/* RIGHT — form */}
       <div className="auth-right" style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px" }}>
         {/* Mobile-only header */}
-        <div style={{ display: "none" }} className="auth-mobile-header">
+        <div className="auth-mobile-header" style={{ display: "none" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 40 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <svg width={14} height={14} viewBox="0 0 24 24" fill="none">

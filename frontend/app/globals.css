@@ -164,6 +164,11 @@ body {
   .stat-grid       { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
+/* Tablet */
+@media (max-width: 900px) {
+  .auth-mobile-header { display: flex !important; }
+}
+
 /* Mobile */
 @media (max-width: 640px) {
   /* Nav */
@@ -171,8 +176,14 @@ body {
 
   /* Layouts */
   .page-pad        { padding: 16px 16px 64px !important; }
-  .footer-pad      { padding: 24px 16px !important; }
-  .auth-right      { padding: 32px 20px !important; }
+  .footer-pad      { padding: 24px 16px !important; margin: 0 0 8px !important; }
+  .auth-right      { padding: 24px 20px 40px !important; justify-content: flex-start !important; padding-top: 0 !important; }
+
+  /* Auth mobile header */
+  .auth-mobile-header { display: flex !important; }
+
+  /* Hero section */
+  .hero-bg         { margin: 0 -16px !important; padding: 28px 20px 32px !important; border-radius: 0 0 16px 16px !important; }
 
   /* Landing hero */
   .hero-title      { font-size: 32px !important; line-height: 1.1 !important; }
@@ -191,4 +202,8 @@ body {
 
   /* Footer */
   .footer-grid     { grid-template-columns: 1fr !important; gap: 24px !important; }
+
+  /* Cards */
+  .card-grid       { grid-template-columns: 1fr !important; }
+  .card-right-col  { margin-top: 0 !important; }
 }
