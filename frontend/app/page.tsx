@@ -295,7 +295,7 @@ export default function Home() {
 
         </main>
 
-        <footer className="footer-pad footer-grid" style={{ borderTop: "1px solid var(--bd-faint)", padding: "40px 48px 32px", display: "grid", gridTemplateColumns: "1fr auto", gap: 40 }}>
+        <footer className="footer-pad footer-grid hero-bg" style={{ borderTop: "1px solid var(--bd-faint)", padding: "40px 48px 32px", display: "grid", gridTemplateColumns: "1fr auto", gap: 40, borderRadius: 16, margin: "0 0 16px" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none">
