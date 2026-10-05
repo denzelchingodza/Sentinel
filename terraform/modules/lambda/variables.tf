@@ -8,3 +8,4 @@ variable "alert_email"          { type = string }
 variable "ses_arn"              { type = string }
 variable "alert_queue_url"      { type = string }
 variable "alert_queue_arn"      { type = string }
+variable "groq_api_key"         { type = string }

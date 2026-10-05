@@ -158,6 +158,132 @@ exports.handler = async (event) => {
       return response(200, Items);
     }
 
+    // ── GET /digest — AI-generated incident digest ───────────────────────────
+    if (method === "GET" && path === "/digest") {
+
+      // ── Step 1: Gather all the raw data ──────────────────────────────────
+      // Fetch all monitors belonging to this user
+      const { Items: monitors = [] } = await dynamo.send(new QueryCommand({
+        TableName: MONITORS_TABLE,
+        IndexName: "userId-index",
+        KeyConditionExpression: "userId = :u",
+        ExpressionAttributeValues: { ":u": userId },
+      }));
+
+      // Fetch all incidents belonging to this user
+      const { Items: allIncidents = [] } = await dynamo.send(new QueryCommand({
+        TableName: INCIDENTS_TABLE,
+        IndexName: "userId-index",
+        KeyConditionExpression: "userId = :u",
+        ExpressionAttributeValues: { ":u": userId },
+      }));
+
+      // Filter incidents to the last 7 days in code
+      // (DynamoDB can't filter by timestamp here without a sort key on this index)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const recentIncidents = allIncidents.filter(inc => inc.startTime >= sevenDaysAgo);
+
+      // ── Step 2: Shape the data into something meaningful ─────────────────
+      // For each monitor, calculate how many incidents it had and total downtime
+      const monitorSummaries = monitors.map(m => {
+        const monIncidents = recentIncidents.filter(i => i.monitorId === m.id);
+        const totalDowntimeMinutes = monIncidents.reduce((sum, inc) => {
+          if (inc.resolved && inc.endTime) {
+            return sum + Math.round((new Date(inc.endTime) - new Date(inc.startTime)) / 1000 / 60);
+          }
+          return sum; // ongoing incident — don't count yet
+        }, 0);
+        return {
+          name: m.name,
+          url: m.url,
+          currentStatus: m.lastStatus || "unknown",
+          lastResponseTime: m.lastResponseTime ? `${m.lastResponseTime}ms` : "no data",
+          incidentsLast7Days: monIncidents.length,
+          totalDowntimeMinutes,
+          hasActiveIncident: monIncidents.some(i => !i.resolved),
+        };
+      });
+
+      // Recent incidents sorted newest first, capped at 10 for the prompt
+      const incidentDetails = recentIncidents
+        .map(inc => {
+          const monitor = monitors.find(m => m.id === inc.monitorId);
+          const durationMinutes = inc.resolved && inc.endTime
+            ? Math.round((new Date(inc.endTime) - new Date(inc.startTime)) / 1000 / 60)
+            : null;
+          return {
+            monitor: monitor?.name || inc.url,
+            startTime: inc.startTime,
+            duration: durationMinutes !== null ? `${durationMinutes} minutes` : "ongoing",
+            resolved: inc.resolved,
+            error: inc.error || null,
+            statusCode: inc.statusCode || null,
+          };
+        })
+        .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+        .slice(0, 10);
+
+      // ── Step 3: Build the prompt ──────────────────────────────────────────
+      // This is what we hand to the LLM. The quality of the prompt determines
+      // the quality of the output. We give it structured data and clear instructions.
+      const context = {
+        totalMonitors: monitors.length,
+        monitorsCurrentlyUp: monitors.filter(m => m.lastStatus === "up").length,
+        monitorsCurrentlyDown: monitors.filter(m => m.lastStatus === "down").length,
+        totalIncidentsLast7Days: recentIncidents.length,
+        monitors: monitorSummaries,
+        recentIncidents: incidentDetails,
+      };
+
+      const prompt = `You are an infrastructure monitoring assistant for Sentinel, a URL uptime monitoring platform.
+
+Here is the monitoring data for the user's endpoints over the last 7 days:
+
+${JSON.stringify(context, null, 2)}
+
+Write a concise plain-English digest. Be specific — use monitor names, incident counts, and downtime durations. Highlight anything that needs attention. If everything looks healthy, say so clearly. Keep it to 3-5 sentences. Write it as flowing prose with no bullet points or headers.`;
+
+      // ── Step 4: Call the LLM (Groq — free, runs Llama 3) ─────────────────
+      // Groq's API is OpenAI-compatible. We send our prompt, get back generated text.
+      // The model predicts the next token repeatedly until it decides it's done.
+      const GROQ_API_KEY = process.env.GROQ_API_KEY;
+      if (!GROQ_API_KEY) return response(500, { error: "GROQ_API_KEY not configured" });
+
+      const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 250,
+          temperature: 0.4, // low temperature = more factual, less creative
+        }),
+      });
+
+      if (!groqRes.ok) {
+        const err = await groqRes.text();
+        console.error("Groq error:", err);
+        return response(502, { error: "AI service unavailable" });
+      }
+
+      const groqData = await groqRes.json();
+      const digest = groqData.choices?.[0]?.message?.content?.trim();
+      if (!digest) return response(502, { error: "No response from AI" });
+
+      // ── Step 5: Return it ─────────────────────────────────────────────────
+      return response(200, {
+        digest,
+        generatedAt: new Date().toISOString(),
+        stats: {
+          totalMonitors: context.totalMonitors,
+          totalIncidents: context.totalIncidentsLast7Days,
+        },
+      });
+    }
+
     return response(404, { error: "Not found" });
 
   } catch (err) {

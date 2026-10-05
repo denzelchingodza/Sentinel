@@ -40,6 +40,7 @@ module "lambda" {
   checks_table_arn     = module.dynamodb.checks_table_arn
   incidents_table_arn  = module.dynamodb.incidents_table_arn
   alert_email          = var.alert_email
+  groq_api_key         = var.groq_api_key
   ses_arn              = module.ses.ses_identity_arn
   alert_queue_url      = aws_sqs_queue.alert_dlq.url
   alert_queue_arn      = aws_sqs_queue.alert_dlq.arn

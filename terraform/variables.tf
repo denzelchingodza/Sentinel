@@ -13,3 +13,9 @@ variable "alert_email" {
   description = "Email address to send alerts to"
   type        = string
 }
+
+variable "groq_api_key" {
+  description = "Groq API key for AI digest generation"
+  type        = string
+  sensitive   = true
+}

@@ -107,7 +107,7 @@ resource "aws_lambda_function" "api" {
   role             = aws_iam_role.lambda_role.arn
   handler          = "index.handler"
   runtime          = "nodejs20.x"
-  timeout          = 15
+  timeout          = 29
   source_code_hash = data.archive_file.api.output_base64sha256
 
   environment {
@@ -115,6 +115,7 @@ resource "aws_lambda_function" "api" {
       MONITORS_TABLE  = var.monitors_table_name
       CHECKS_TABLE    = var.checks_table_name
       INCIDENTS_TABLE = var.incidents_table_name
+      GROQ_API_KEY    = var.groq_api_key
     }
   }
 }

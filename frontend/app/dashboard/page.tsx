@@ -81,6 +81,9 @@ export default function Dashboard() {
   const [formUrl, setFormUrl]         = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [digest, setDigest]               = useState<string | null>(null);
+  const [digestLoading, setDigestLoading] = useState(false);
+  const [digestTime, setDigestTime]       = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -152,6 +155,17 @@ export default function Dashboard() {
       setFormName(""); setFormUrl(""); setShowForm(false); refresh();
     } catch { alert("Failed to add monitor"); }
     finally { setFormLoading(false); }
+  };
+
+  const generateDigest = async () => {
+    setDigestLoading(true);
+    try {
+      const res = await authFetch(`${API_BASE}/digest`);
+      const data = await res.json();
+      setDigest(data.digest);
+      setDigestTime(data.generatedAt);
+    } catch { setDigest("Failed to generate digest. Try again."); }
+    finally { setDigestLoading(false); }
   };
 
   const deleteMonitor = async (id: string) => {
@@ -406,6 +420,41 @@ export default function Dashboard() {
                 </div>
               )}
             </>
+          )}
+
+          {/* AI Digest card */}
+          {monitors.length > 0 && (
+            <div style={{ marginTop: 24, background: "var(--bg-card)", border: "1px solid var(--bd)", borderRadius: 14, padding: "22px 24px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {/* Small spark icon */}
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#FF9900" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ch)", letterSpacing: "0.02em" }}>AI Digest</span>
+                  {digestTime && (
+                    <span style={{ fontSize: 10, color: "var(--cd)" }}>
+                      {new Date(digestTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={generateDigest}
+                  disabled={digestLoading}
+                  className="btn-primary"
+                  style={{ background: "#FF9900", border: "none", color: "#000", padding: "6px 16px", borderRadius: 6, cursor: digestLoading ? "not-allowed" : "pointer", fontSize: 11, fontWeight: 700, opacity: digestLoading ? 0.7 : 1 }}>
+                  {digestLoading ? "Generating..." : digest ? "Regenerate" : "Generate digest"}
+                </button>
+              </div>
+
+              {digest ? (
+                <p style={{ fontSize: 13.5, color: "var(--cb)", lineHeight: 1.75, margin: 0 }}>{digest}</p>
+              ) : (
+                <p style={{ fontSize: 13, color: "var(--cd)", margin: 0 }}>
+                  Press generate and Sentinel will summarise your last 7 days of monitoring data in plain English.
+                </p>
+              )}
+            </div>
           )}
 
         </main>
