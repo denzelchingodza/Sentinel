@@ -129,12 +129,12 @@ export default function Home() {
           {/* Left: wordmark */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <ShieldIcon />
-            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)", letterSpacing: "0.04em" }}>Sentinel</span>
+            <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)", letterSpacing: "0.04em" }}>Sentinel <span style={{ color: "#FF9900" }}>AI</span></span>
           </div>
 
           {/* Right: wordmark + hamburger */}
           <div ref={menuRef} style={{ display: "flex", alignItems: "center", gap: 16, position: "relative" }}>
-            <span style={{ fontWeight: 700, fontSize: 13, color: "var(--cs)", letterSpacing: "0.05em" }}>Sentinel</span>
+            <span style={{ fontWeight: 700, fontSize: 13, color: "var(--cs)", letterSpacing: "0.05em" }}>Sentinel <span style={{ color: "#FF9900" }}>AI</span></span>
 
             <button
               onClick={() => setMenuOpen((v) => !v)}
@@ -191,11 +191,11 @@ export default function Home() {
             <div>
               <h1 data-reveal data-delay="0"
                 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(36px, 5.5vw, 56px)", fontWeight: 400, lineHeight: 1.05, letterSpacing: "-0.01em", color: "var(--ch)", margin: "0 0 16px" }}>
-                URL monitoring<br />on AWS.
+                URL monitoring<br />with AI, on AWS.
               </h1>
               <p data-reveal data-delay="80"
                 style={{ ...BODY, fontSize: 14, maxWidth: 380, margin: 0, color: "var(--cb)" }}>
-                Checks your URLs every 60 seconds. Emails you when something goes down, and again when it recovers.
+                Checks your URLs every 60 seconds. Emails you on downtime. The AI digest reads your last 7 days and tells you exactly what happened.
               </p>
             </div>
           </div>
@@ -258,19 +258,19 @@ export default function Home() {
               </div>
 
               <div data-reveal data-delay="180" className="ch" style={CARD}>
-                <h2 style={{ ...HEADING, marginBottom: 6 }}>AI is coming<br />to Sentinel.</h2>
-                <span style={{ fontSize: 10, color: "var(--cd)", letterSpacing: "0.06em", marginBottom: 14, display: "block" }}>coming soon</span>
+                <h2 style={{ ...HEADING, marginBottom: 6 }}>AI that reads<br />your infra.</h2>
+                <span style={{ fontSize: 10, color: "#FF9900", letterSpacing: "0.06em", marginBottom: 14, display: "block", fontWeight: 700 }}>live now</span>
                 <p style={{ ...BODY, marginBottom: 22 }}>
-                  Monitoring tells you what happened. Intelligence will tell you why, and what is coming next.
+                  Monitoring tells you what happened. The AI digest tells you what it means — in plain English, with real numbers, every time you ask.
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {[
-                    { title: "Incident prediction", desc: "Detect anomalies before users notice anything." },
-                    { title: "Natural language reports", desc: "Plain English summaries of what failed and for how long." },
-                    { title: "Smart alerting", desc: "Suppress noise. Surface what actually matters." },
+                    { title: "7-day incident digest", desc: "Downtime durations, incident counts, and what needs attention — written in prose." },
+                    { title: "Per-monitor analysis", desc: "Each URL gets its own breakdown: response time, uptime, and active incidents." },
+                    { title: "On demand", desc: "Generate a fresh digest any time from your dashboard. No scheduled emails, no noise." },
                   ].map((f) => (
                     <div key={f.title} style={{ display: "flex", gap: 12, paddingBottom: 12, borderBottom: "1px solid var(--bd-faint)" }}>
-                      <div style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(74,158,255,0.25)", marginTop: 5, flexShrink: 0 }} />
+                      <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#FF9900", marginTop: 5, flexShrink: 0 }} />
                       <div>
                         <div style={{ fontSize: 12, fontWeight: 600, color: "var(--cb)", marginBottom: 2 }}>{f.title}</div>
                         <div style={{ fontSize: 11, color: "var(--cs)", lineHeight: 1.7 }}>{f.desc}</div>
@@ -303,12 +303,12 @@ export default function Home() {
                   stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" fill="rgba(46,74,94,0.15)" />
                 <path d="M9 12l2 2 4-4" stroke="var(--cf)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)" }}>Sentinel</span>
+              <span style={{ fontWeight: 600, fontSize: 12, color: "var(--clo)" }}>Sentinel <span style={{ color: "#FF9900" }}>AI</span></span>
             </div>
             <p style={{ fontSize: 12, color: "var(--cs)", lineHeight: 1.7, margin: "0 0 16px", maxWidth: 300 }}>
-              URL monitoring built on AWS. Checks every 60 seconds, alerts on downtime. A personal project by Denzel Chingodza.
+              URL monitoring with AI-powered incident analysis, built on AWS. Checks every 60 seconds, alerts on downtime, explains what happened. A personal project by Denzel Chingodza.
             </p>
-            <span style={{ fontSize: 11, color: "var(--cd)" }}>Lambda · DynamoDB · SES · Cognito · SQS · EventBridge · af-south-1</span>
+            <span style={{ fontSize: 11, color: "var(--cd)" }}>Lambda · DynamoDB · SES · Cognito · SQS · EventBridge · OpenRouter · af-south-1</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between" }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>

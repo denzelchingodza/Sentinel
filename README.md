@@ -1,6 +1,6 @@
-# Sentinel
+# Sentinel AI
 
-Uptime monitoring on serverless AWS infrastructure. Add a URL, and Sentinel checks it every 60 seconds, emails you when it goes down, and emails you again when it recovers.
+Uptime monitoring with AI-powered incident analysis, built on serverless AWS infrastructure. Add a URL, and Sentinel checks it every 60 seconds, emails you when it goes down, and again when it recovers. The AI digest reads your last 7 days of monitoring data and returns a plain-English summary of what happened and what needs attention.
 
 ![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazonaws&logoColor=white)
 ![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=flat&logo=terraform&logoColor=white)
@@ -12,6 +12,8 @@ Uptime monitoring on serverless AWS infrastructure. Add a URL, and Sentinel chec
 ## What it does
 
 Sentinel monitors URLs and tracks their uptime over time. Every 60 seconds, a Lambda function runs and checks each registered monitor. If a URL fails, an incident is opened and an alert goes out via SES. When the URL recovers, the incident is closed and a recovery email follows. Every check is stored with its response time, giving you a full history of availability and performance.
+
+On top of that, the AI digest endpoint queries your monitors and all incidents from the last 7 days, computes per-monitor downtime summaries, builds a structured prompt, and sends it to a language model. What comes back is a concise plain-English report — incident counts, downtime durations, anything that needs attention — written in prose, not tables or bullet points.
 
 The entire backend is serverless. There are no servers to manage, no processes to keep alive, and no infrastructure to babysit. EventBridge triggers the monitor Lambda on a schedule. API Gateway sits in front of the API Lambda with Cognito JWT authentication on every route. DynamoDB handles three tables: monitors, check history, and incidents. Everything is provisioned with Terraform.
 
@@ -37,6 +39,7 @@ API Gateway (Cognito JWT auth)
   |
   v
 Lambda (API)  -->  DynamoDB (monitors, checks, incidents)
+              -->  OpenRouter API (AI digest — LLM inference)
 ```
 
 ---
@@ -52,8 +55,25 @@ Lambda (API)  -->  DynamoDB (monitors, checks, incidents)
 | Queue | Amazon SQS |
 | Auth | Amazon Cognito |
 | API | Amazon API Gateway |
+| AI | OpenRouter (Mistral 7B) |
 | Infrastructure | Terraform |
 | Frontend | Next.js (App Router) |
+
+---
+
+## AI digest
+
+The `GET /digest` route is the AI layer. It works in five steps:
+
+**1. Gather** — queries the monitors and incidents tables for the authenticated user.
+
+**2. Shape** — filters incidents to the last 7 days in code (the DynamoDB GSI on `userId-index` has no timestamp sort key, so date filtering runs in JavaScript). Computes per-monitor summaries: incident count, total resolved downtime in minutes, current status, active incident flag.
+
+**3. Prompt** — builds a structured JSON context object and writes it into a system prompt that instructs the model to produce 3–5 sentences of prose, using specific names and numbers, flagging anything that needs attention.
+
+**4. Call** — sends the prompt to OpenRouter using the OpenAI-compatible `/v1/chat/completions` endpoint. Uses `mistralai/mistral-7b-instruct:free` at `temperature: 0.4` and `max_tokens: 250`. No additional dependencies — uses Node.js 18+ native `fetch`.
+
+**5. Return** — responds with `{ digest, generatedAt, stats }`. The frontend displays the digest in the AI card at the bottom of the dashboard.
 
 ---
 
@@ -83,12 +103,16 @@ cd sentinel/terraform
 
 **2. Set your variables**
 
-Create a `terraform.tfvars` file:
+Create a `terraform.tfvars` file (this file is gitignored — never commit it):
 
 ```hcl
-aws_region  = "af-south-1"
-alert_email = "your@email.com"
+aws_region     = "af-south-1"
+aws_account_id = "your-account-id"
+alert_email    = "your@email.com"
+groq_api_key   = "your-openrouter-api-key"
 ```
+
+The `groq_api_key` variable holds your OpenRouter API key. Get one free at `openrouter.ai` — no credit card required.
 
 **3. Deploy**
 
@@ -108,7 +132,9 @@ Copy `.env.local.example` to `.env.local` and fill in your Cognito User Pool ID,
 
 ## What I learned
 
-I had never used Terraform, DynamoDB, EventBridge, or SES before this project. I learned all of them because the project needed them. At the end I had a fully deployed, production grade monitoring system running on infrastructure I had provisioned from scratch with code.
+I had never used Terraform, DynamoDB, EventBridge, or SES before this project. I learned all of them because the project needed them. At the end I had a fully deployed, production-grade monitoring system running on infrastructure I had provisioned from scratch with code.
+
+Adding AI to the project meant learning how language models actually work — not at the model level, but at the integration level. The prompt is everything. The quality of what the LLM returns is determined entirely by the structure and clarity of what you send it. That meant thinking carefully about what data matters, how to compute it, and how to describe it to a model that has no other context.
 
 That experience is the reason cloud infrastructure does not intimidate me anymore. Before Sentinel, AWS felt like a black box. After it, it feels like a tool.
 
@@ -118,7 +144,7 @@ That experience is the reason cloud infrastructure does not intimidate me anymor
 
 **SES not sending any emails**
 
-AWS SES starts in sandbox mode. In sandbox mode, both the sender and recipient addresses must be individually verified in the SES console before any email can be sent. The Lambda was executing without errors, but no emails arrived. Verified the sender address in SES, and alerts started working immediately. In production, SES sandbox limits require a support request to AWS to exit something to plan for before launch.
+AWS SES starts in sandbox mode. In sandbox mode, both the sender and recipient addresses must be individually verified in the SES console before any email can be sent. The Lambda was executing without errors, but no emails arrived. Verified the sender address in SES, and alerts started working immediately. In production, SES sandbox limits require a support request to AWS to exit — something to plan for before launch.
 
 **Lambda had no permissions to write to DynamoDB or send via SES**
 
@@ -126,17 +152,15 @@ The Lambda functions deployed successfully but failed at runtime with `AccessDen
 
 **EventBridge trigger not firing**
 
-The monitor Lambda deployed but never executed on schedule. The issue was a name mismatch the EventBridge module referenced `module.lambda.monitor_lambda_name` but the Lambda module output was named `lambda_monitor_name`. Terraform silently used an empty string, creating a rule that pointed at nothing. Fixed by aligning output and variable names across modules and running `terraform plan` to verify the dependency graph before applying.
+The monitor Lambda deployed but never executed on schedule. The issue was a name mismatch — the EventBridge module referenced `module.lambda.monitor_lambda_name` but the Lambda module output was named `lambda_monitor_name`. Terraform silently used an empty string, creating a rule that pointed at nothing. Fixed by aligning output and variable names across modules and running `terraform plan` to verify the dependency graph before applying.
 
 **Terraform state confusion causing duplicate resources**
 
-Running `terraform apply` a second time after manually deleting a resource in the AWS console caused Terraform to try creating it again while its state entry still existed, producing `ResourceAlreadyExists` errors. Learned that `terraform.tfstate` is the source of truth if a resource is deleted outside Terraform, the state must be updated with `terraform state rm` before re-applying.
+Running `terraform apply` a second time after manually deleting a resource in the AWS console caused Terraform to try creating it again while its state entry still existed, producing `ResourceAlreadyExists` errors. Learned that `terraform.tfstate` is the source of truth — if a resource is deleted outside Terraform, the state must be updated with `terraform state rm` before re-applying.
 
 **Cognito JWT authorizer not blocking unauthenticated requests**
 
 The API Gateway authorizer was configured but initially had the wrong `authorization_scopes` setting, causing it to pass all requests through without validating the JWT. Fixed by setting the authorizer type to `JWT`, pointing it at the Cognito user pool ARN, and confirming that unauthenticated requests returned 401 before wiring up the frontend.
-
----
 
 **SES alert dropped silently when the service was temporarily unavailable**
 
@@ -151,12 +175,12 @@ The monitor Lambda processes all active monitors in a `Promise.all`. If one moni
 ## Technical notes
 
 - **Modular Terraform** — each AWS service (Cognito, DynamoDB, Lambda, EventBridge, API Gateway, SES) lives in its own `modules/` directory with its own `main.tf`, `variables.tf`, and `outputs.tf`. Module outputs are passed as inputs to dependent modules (e.g., DynamoDB table ARNs into the Lambda module for IAM policies).
-- **Three DynamoDB tables** — `monitors` (user-defined URLs), `checks` (every result from every check, with response time), `incidents` (open/closed outage records). DynamoDB's on demand billing means no capacity planning needed for this scale.
-- **Daemon pattern** — the monitor Lambda queries all monitors, checks each URL with a timeout, writes the result to `checks`, and updates or creates an incident record if the status changed. The entire function is stateless it reads current state from DynamoDB at the start of every invocation.
-- **Cognito full auth lifecycle** — sign up triggers a verification email via Cognito's built in email provider. Password reset uses the `forgotPassword` / `confirmForgotPassword` flow. Account deletion calls `deleteUser` on the Cognito client and clears the local session, then redirects to sign in.
+- **Three DynamoDB tables** — `monitors` (user-defined URLs), `checks` (every result from every check, with response time), `incidents` (open/closed outage records). DynamoDB's on-demand billing means no capacity planning needed for this scale.
+- **Daemon pattern** — the monitor Lambda queries all monitors, checks each URL with a timeout, writes the result to `checks`, and updates or creates an incident record if the status changed. The entire function is stateless — it reads current state from DynamoDB at the start of every invocation.
+- **AI prompt engineering** — the digest prompt passes a structured JSON context object rather than raw DynamoDB items. This means the model sees computed values (total downtime in minutes, incident counts per monitor, current status) rather than raw timestamps and boolean flags. Lower temperature (`0.4`) keeps output factual.
+- **LLM timeout** — the API Lambda timeout is set to 29 seconds (API Gateway's hard limit is 30). LLM API calls typically respond in 2–5 seconds, but this leaves headroom for slow responses without hitting the Gateway timeout.
+- **Cognito full auth lifecycle** — sign up triggers a verification email via Cognito's built-in email provider. Password reset uses the `forgotPassword` / `confirmForgotPassword` flow. Account deletion calls `deleteUser` on the Cognito client and clears the local session, then redirects to sign in.
 - **Cognito session caching** — `getIdToken()` is called on every API request from the frontend. Previously each call instantiated a new `CognitoUserPool`, fetched the current user, and read from localStorage. Now the session is cached in a module-level variable and reused until it is within 5 minutes of its expiry, at which point it is refreshed. The cache is cleared immediately on sign-out.
 - **SQS alert queue** — the queue uses a 60-second visibility timeout so that if something reads a message and fails to process it, it becomes available again for retry. Messages are retained for 24 hours. The same queue doubles as the Lambda's Dead Letter Queue, keeping the infrastructure footprint minimal.
 
 ---
-
-
