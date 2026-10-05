@@ -162,9 +162,17 @@ export default function Dashboard() {
     try {
       const res = await authFetch(`${API_BASE}/digest`);
       const data = await res.json();
-      setDigest(data.digest);
-      setDigestTime(data.generatedAt);
-    } catch { setDigest("Failed to generate digest. Try again."); }
+      if (!res.ok) {
+        setDigest(`Error ${res.status}: ${data.error || "Unknown error"}`);
+      } else if (data.digest) {
+        setDigest(data.digest);
+        setDigestTime(data.generatedAt);
+      } else {
+        setDigest("No digest returned. Check Lambda logs.");
+      }
+    } catch (err: unknown) {
+      setDigest(`Failed: ${err instanceof Error ? err.message : "Network error"}`);
+    }
     finally { setDigestLoading(false); }
   };
 
