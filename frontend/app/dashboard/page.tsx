@@ -31,6 +31,14 @@ interface Incident {
   error: string | null;
 }
 
+interface CheckPoint {
+  id: string;
+  timestamp: string;
+  responseTime: number;
+  healthy: boolean;
+  anomalyFlag?: boolean;
+}
+
 function timeAgo(iso: string | null): string {
   if (!iso) return "never";
   const d = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -49,6 +57,92 @@ function UptimeBar({ uptime }: { uptime: string }) {
         <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 2, transition: "width 0.5s ease" }} />
       </div>
       <span style={{ fontSize: 12, fontWeight: 600, color, minWidth: 40, textAlign: "right" }}>{uptime}%</span>
+    </div>
+  );
+}
+
+function ResponseTimeChart({ checks }: { checks: CheckPoint[] }) {
+  if (checks.length < 2) return (
+    <div style={{ padding: "14px 18px", fontSize: 12, color: "var(--clo)" }}>Not enough data yet.</div>
+  );
+
+  const W = 600, H = 72, PX = 12, PY = 10;
+  const iW = W - PX * 2, iH = H - PY * 2;
+
+  const responseTimes = checks.filter(c => c.healthy && c.responseTime > 0).map(c => c.responseTime);
+  const maxRt = responseTimes.length > 0 ? Math.max(...responseTimes) : 1000;
+  const minRt = responseTimes.length > 0 ? Math.min(...responseTimes) : 0;
+  const range = Math.max(maxRt - minRt, 100);
+
+  const xOf = (i: number) => PX + (i / (checks.length - 1)) * iW;
+  const yOf = (rt: number) => PY + iH - ((rt - minRt) / range) * iH;
+
+  // Build polyline for healthy checks
+  const linePoints = checks
+    .map((c, i) => c.healthy && c.responseTime > 0 ? `${xOf(i).toFixed(1)},${yOf(c.responseTime).toFixed(1)}` : null)
+    .filter(Boolean)
+    .join(" ");
+
+  const anomalyCount = checks.filter(c => c.anomalyFlag).length;
+
+  return (
+    <div style={{ padding: "0 18px 16px", borderTop: "1px solid var(--bd-faint)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0 8px" }}>
+        <span style={{ fontSize: 10, color: "var(--clo)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>
+          Response time — last {checks.length} checks
+        </span>
+        {anomalyCount > 0 && (
+          <span style={{ fontSize: 10, color: "#FF9900", fontWeight: 600 }}>
+            {anomalyCount} anomal{anomalyCount === 1 ? "y" : "ies"} flagged
+          </span>
+        )}
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ display: "block", overflow: "visible" }}>
+        {/* Baseline grid line */}
+        <line x1={PX} y1={PY + iH} x2={PX + iW} y2={PY + iH} stroke="var(--bd)" strokeWidth="0.5" />
+        {/* Response time polyline */}
+        {linePoints && (
+          <polyline points={linePoints} fill="none" stroke="var(--cf)" strokeWidth="1.5" strokeLinejoin="round" opacity="0.6" />
+        )}
+        {/* Individual check dots */}
+        {checks.map((c, i) => {
+          const x = xOf(i);
+          if (!c.healthy) {
+            // Down: red mark at baseline
+            return <line key={c.id} x1={x} y1={PY + iH - 6} x2={x} y2={PY + iH + 2} stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />;
+          }
+          if (!c.responseTime) return null;
+          const y = yOf(c.responseTime);
+          if (c.anomalyFlag) {
+            // Anomaly: orange diamond
+            const s = 4;
+            return (
+              <polygon key={c.id}
+                points={`${x},${y - s} ${x + s},${y} ${x},${y + s} ${x - s},${y}`}
+                fill="#FF9900" stroke="#FF9900" strokeWidth="1"
+              >
+                <title>{c.responseTime}ms — anomaly</title>
+              </polygon>
+            );
+          }
+          // Normal: small dot colored by speed
+          const color = c.responseTime < 500 ? "#22c55e" : c.responseTime < 2000 ? "#f59e0b" : "#ef4444";
+          return <circle key={c.id} cx={x} cy={y} r={2} fill={color} opacity={0.8}><title>{c.responseTime}ms</title></circle>;
+        })}
+      </svg>
+      <div style={{ display: "flex", gap: 14, marginTop: 6 }}>
+        {[
+          { color: "#22c55e", label: "< 500ms" },
+          { color: "#f59e0b", label: "< 2s" },
+          { color: "#ef4444", label: "slow / down" },
+          { color: "#FF9900", label: "anomaly" },
+        ].map(({ color, label }) => (
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: color }} />
+            <span style={{ fontSize: 9, color: "var(--clo)" }}>{label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -84,6 +178,8 @@ export default function Dashboard() {
   const [digest, setDigest]               = useState<string | null>(null);
   const [digestLoading, setDigestLoading] = useState(false);
   const [digestTime, setDigestTime]       = useState<string | null>(null);
+  const [expandedMonitor, setExpandedMonitor] = useState<string | null>(null);
+  const [checkHistory, setCheckHistory]       = useState<Record<string, CheckPoint[]>>({});
 
   useEffect(() => {
     let active = true;
@@ -180,6 +276,22 @@ export default function Dashboard() {
     await authFetch(`${API_BASE}/monitors/${id}`, { method: "DELETE" });
     setConfirmDelete(null); refresh();
   };
+
+  const toggleExpand = useCallback(async (id: string) => {
+    if (expandedMonitor === id) { setExpandedMonitor(null); return; }
+    setExpandedMonitor(id);
+    if (!checkHistory[id]) {
+      try {
+        const res = await authFetch(`${API_BASE}/monitors/${id}/history?limit=60`);
+        if (res.ok) {
+          const items: CheckPoint[] = await res.json();
+          // Sort oldest first for the chart
+          items.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+          setCheckHistory(prev => ({ ...prev, [id]: items }));
+        }
+      } catch { /* ignore */ }
+    }
+  }, [expandedMonitor, checkHistory, authFetch]);
 
 
   if (!authChecked || loading) {
@@ -343,7 +455,7 @@ export default function Dashboard() {
                     : m.lastResponseTime < 2000 ? "#f59e0b"
                     : "#ef4444";
                   const deleteActions = confirmDelete === m.id ? (
-                    <div style={{ display: "flex", gap: 4 }}>
+                    <div style={{ display: "flex", gap: 4 }} onClick={e => e.stopPropagation()}>
                       <button onClick={() => deleteMonitor(m.id)}
                         style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#9b7070", padding: "3px 8px", borderRadius: 5, cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
                         Remove
@@ -354,15 +466,15 @@ export default function Dashboard() {
                       </button>
                     </div>
                   ) : (
-                    <button onClick={() => setConfirmDelete(m.id)}
+                    <button onClick={e => { e.stopPropagation(); setConfirmDelete(m.id); }}
                       style={{ background: "transparent", border: "1px solid var(--bd)", color: "var(--clo)", width: 28, height: 28, borderRadius: 5, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       ✕
                     </button>
                   );
                   return (
-                    <div key={m.id} style={{ background: "var(--bg-card)", border: `1px solid ${isDown ? "rgba(239,68,68,0.25)" : "var(--bd-faint)"}`, borderRadius: 10 }}>
+                    <div key={m.id} style={{ background: "var(--bg-card)", border: `1px solid ${isDown ? "rgba(239,68,68,0.25)" : "var(--bd-faint)"}`, borderRadius: 10, overflow: "hidden" }}>
                       {/* Desktop row */}
-                      <div className="mon-cols" style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto", alignItems: "center", gap: "0 16px" }}>
+                      <div className="mon-cols" onClick={() => toggleExpand(m.id)} style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "20px 1fr 140px 110px 90px 70px auto", alignItems: "center", gap: "0 16px", cursor: "pointer" }}>
                         <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "var(--bd)", flexShrink: 0 }} />
                         <div style={{ overflow: "hidden" }}>
                           <div style={{ fontWeight: 600, fontSize: 14, color: "var(--ch)", marginBottom: 2 }}>{m.name}</div>
@@ -384,8 +496,8 @@ export default function Dashboard() {
                         <div style={{ textAlign: "right", fontSize: 11, color: "var(--clo)" }}>{timeAgo(m.lastChecked)}</div>
                         {deleteActions}
                       </div>
-                      {/* Mobile card */}
-                      <div className="mon-mobile" style={{ display: "none", padding: "14px 16px", flexDirection: "column", gap: 10 }}>
+                      {/* Mobile card — stop propagation so expand doesn't fire on delete button tap */}
+                      <div className="mon-mobile" onClick={() => toggleExpand(m.id)} style={{ display: "none", padding: "14px 16px", flexDirection: "column", gap: 10, cursor: "pointer" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <div style={{ width: 3, height: 14, borderRadius: 2, background: isUp ? "#22c55e" : isDown ? "#ef4444" : "var(--bd)", flexShrink: 0 }} />
@@ -416,6 +528,12 @@ export default function Dashboard() {
                           {deleteActions}
                         </div>
                       </div>
+                      {/* Response time chart — shown when row is expanded */}
+                      {expandedMonitor === m.id && (
+                        checkHistory[m.id]
+                          ? <ResponseTimeChart checks={checkHistory[m.id]} />
+                          : <div style={{ padding: "14px 18px", fontSize: 12, color: "var(--clo)", borderTop: "1px solid var(--bd-faint)" }}>Loading...</div>
+                      )}
                     </div>
                   );
                 })}

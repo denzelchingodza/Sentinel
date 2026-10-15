@@ -80,12 +80,14 @@ resource "aws_lambda_function" "monitor" {
 
   environment {
     variables = {
-      MONITORS_TABLE   = var.monitors_table_name
-      CHECKS_TABLE     = var.checks_table_name
-      INCIDENTS_TABLE  = var.incidents_table_name
-      ALERT_EMAIL      = var.alert_email
-      AWS_SES_REGION   = "af-south-1"
-      ALERT_QUEUE_URL  = var.alert_queue_url
+      MONITORS_TABLE        = var.monitors_table_name
+      CHECKS_TABLE          = var.checks_table_name
+      INCIDENTS_TABLE       = var.incidents_table_name
+      ALERT_EMAIL           = var.alert_email
+      AWS_SES_REGION        = "af-south-1"
+      ALERT_QUEUE_URL       = var.alert_queue_url
+      CONSECUTIVE_THRESHOLD = "2"
+      FLAP_THRESHOLD        = "4"
     }
   }
 
