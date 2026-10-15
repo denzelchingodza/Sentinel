@@ -58,9 +58,15 @@ const HEADING: React.CSSProperties = {
   lineHeight: 1.2,
 };
 
+const SHOTS = [
+  { src: "/screenshots/dashboard.png",      label: "Dashboard — monitors + AI digest"       },
+  { src: "/screenshots/response-chart.png", label: "Response time chart (click to expand)"  },
+];
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [lightbox, setLightbox] = useState<number | null>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -103,6 +109,26 @@ export default function Home() {
         .ch { transition: border-color 0.2s ease; }
         .ch:hover { border-color: rgba(255,153,0,0.2) !important; }
 
+        .lightbox-overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 1000; backdrop-filter: blur(4px);
+        }
+        .lightbox-overlay img { max-width: min(90vw, 1100px); max-height: 80vh; border-radius: 10px; display: block; }
+        .lb-btn {
+          position: absolute; top: 50%; transform: translateY(-50%);
+          background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+          color: #fff; border-radius: 50%; width: 44px; height: 44px;
+          cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
+        }
+        .lb-btn:hover { background: rgba(255,255,255,0.2); }
+        .lb-close {
+          position: absolute; top: 20px; right: 20px;
+          background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+          color: #fff; border-radius: 50%; width: 40px; height: 40px;
+          cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;
+        }
+        .lb-close:hover { background: rgba(255,255,255,0.2); }
         .menu-item {
           display: flex;
           align-items: center;
@@ -305,29 +331,45 @@ export default function Home() {
 
           {/* SCREENSHOTS */}
           <div data-reveal data-delay="0" style={{ marginTop: 64 }}>
-            <div style={{ marginBottom: 28 }}>
-              <h2 style={{ ...HEADING, fontSize: 20, marginBottom: 8 }}>What it looks like.</h2>
-              <p style={{ ...BODY, fontSize: 12, color: "var(--cs)" }}>Click any screenshot to see it full size.</p>
+            <div style={{ marginBottom: 20 }}>
+              <h2 style={{ ...HEADING, fontSize: 20, marginBottom: 6 }}>What it looks like.</h2>
+              <p style={{ ...BODY, fontSize: 12, color: "var(--cs)" }}>Click any screenshot to expand it.</p>
             </div>
-            <div className="screenshot-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-              {[
-                { src: "/screenshots/dashboard.png",      label: "Dashboard — monitors + AI digest"  },
-                { src: "/screenshots/response-chart.png", label: "Response time chart (click to expand)" },
-              ].map((shot) => (
-                <a key={shot.src} href={shot.src} target="_blank" rel="noopener"
-                  style={{ display: "block", borderRadius: 12, overflow: "hidden", border: "1px solid var(--bd)", transition: "border-color 0.2s ease", textDecoration: "none" }}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, maxWidth: 760 }}>
+              {SHOTS.map((shot, i) => (
+                <button key={shot.src} onClick={() => setLightbox(i)}
+                  style={{ display: "block", borderRadius: 10, overflow: "hidden", border: "1px solid var(--bd)", cursor: "pointer", background: "none", padding: 0, textAlign: "left", transition: "border-color 0.2s" }}
                   className="ch">
                   <img src={shot.src} alt={shot.label}
-                    style={{ width: "100%", display: "block", aspectRatio: "16/10", objectFit: "cover", background: "var(--bg-card)" }}
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    style={{ width: "100%", display: "block", aspectRatio: "16/10", objectFit: "cover", objectPosition: "top", background: "var(--bg-card)" }}
+                    onError={(e) => { (e.target as HTMLImageElement).closest("button")!.style.display = "none"; }}
                   />
-                  <div style={{ padding: "10px 14px", background: "var(--bg-card)" }}>
+                  <div style={{ padding: "8px 12px", background: "var(--bg-card)", borderTop: "1px solid var(--bd)" }}>
                     <span style={{ fontSize: 11, color: "var(--cs)", fontWeight: 500 }}>{shot.label}</span>
                   </div>
-                </a>
+                </button>
               ))}
             </div>
           </div>
+
+          {/* LIGHTBOX */}
+          {lightbox !== null && (
+            <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+              <button className="lb-close" onClick={() => setLightbox(null)}>×</button>
+              {SHOTS.length > 1 && (
+                <button className="lb-btn" style={{ left: 20 }}
+                  onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + SHOTS.length) % SHOTS.length); }}>‹</button>
+              )}
+              <img src={SHOTS[lightbox].src} alt={SHOTS[lightbox].label} onClick={(e) => e.stopPropagation()} />
+              {SHOTS.length > 1 && (
+                <button className="lb-btn" style={{ right: 20 }}
+                  onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % SHOTS.length); }}>›</button>
+              )}
+              <div style={{ position: "absolute", bottom: 24, left: "50%", transform: "translateX(-50%)", color: "rgba(255,255,255,0.6)", fontSize: 12 }}>
+                {SHOTS[lightbox].label}
+              </div>
+            </div>
+          )}
 
           {/* CTA — just the buttons */}
           <div data-reveal data-delay="0" style={{ borderTop: "1px solid var(--bd-faint)", marginTop: 64, paddingTop: 48, display: "flex", justifyContent: "center", gap: 12 }}>
