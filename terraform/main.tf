@@ -47,9 +47,11 @@ module "lambda" {
 }
 
 module "eventbridge" {
-  source              = "./modules/eventbridge"
-  monitor_lambda_arn  = module.lambda.monitor_lambda_arn
-  monitor_lambda_name = module.lambda.monitor_lambda_name
+  source                       = "./modules/eventbridge"
+  monitor_lambda_arn           = module.lambda.monitor_lambda_arn
+  monitor_lambda_name          = module.lambda.monitor_lambda_name
+  digest_scheduler_lambda_arn  = module.lambda.digest_scheduler_lambda_arn
+  digest_scheduler_lambda_name = module.lambda.digest_scheduler_lambda_name
 }
 
 module "api_gateway" {

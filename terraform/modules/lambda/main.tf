@@ -96,6 +96,33 @@ resource "aws_lambda_function" "monitor" {
   }
 }
 
+# ── Digest Scheduler Lambda ────────────────────────────────────────────────────
+data "archive_file" "digest_scheduler" {
+  type        = "zip"
+  source_dir  = "${path.root}/../lambda/functions/digest-scheduler"
+  output_path = "${path.root}/../lambda/zips/digest-scheduler.zip"
+}
+
+resource "aws_lambda_function" "digest_scheduler" {
+  filename         = data.archive_file.digest_scheduler.output_path
+  function_name    = "sentinel_digest_scheduler"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs20.x"
+  timeout          = 60
+  source_code_hash = data.archive_file.digest_scheduler.output_base64sha256
+
+  environment {
+    variables = {
+      MONITORS_TABLE  = var.monitors_table_name
+      INCIDENTS_TABLE = var.incidents_table_name
+      ALERT_EMAIL     = var.alert_email
+      AWS_SES_REGION  = "af-south-1"
+      OPENAI_API_KEY  = var.ai_api_key
+    }
+  }
+}
+
 # ── API Lambda ─────────────────────────────────────────────────────────────────
 data "archive_file" "api" {
   type        = "zip"
