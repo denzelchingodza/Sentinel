@@ -1,6 +1,6 @@
 # Sentinel AI
 
-Uptime monitoring with AI-powered incident analysis, built on serverless AWS infrastructure. Add a URL, and Sentinel checks it every 60 seconds, emails you when it goes down, and again when it recovers. The AI digest reads your last 7 days of monitoring data and returns a plain-English summary of what happened and what needs attention.
+Uptime monitoring with AI-powered incident analysis, built on serverless AWS infrastructure. Add a URL, and Sentinel checks it every 60 seconds, emails you when it goes down, and again when it recovers. The AI digest reads your last 7 days of monitoring data and returns a plain-English summary of what happened and what needs attention. Every Monday morning it lands in your inbox automatically.
 
 ![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat&logo=amazonaws&logoColor=white)
 ![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=flat&logo=terraform&logoColor=white)
@@ -11,11 +11,13 @@ Uptime monitoring with AI-powered incident analysis, built on serverless AWS inf
 
 ## What it does
 
-Sentinel monitors URLs and tracks their uptime over time. Every 60 seconds, a Lambda function runs and checks each registered monitor. If a URL fails, an incident is opened and an alert goes out via SES. When the URL recovers, the incident is closed and a recovery email follows. Every check is stored with its response time, giving you a full history of availability and performance.
+Sentinel monitors URLs and tracks their uptime over time. Every 60 seconds, a Lambda function runs and checks each registered monitor. If a URL fails two checks in a row, an incident is opened and an alert goes out via SES. When the URL recovers, the incident is closed and a recovery email follows. Every check is stored with its response time and an anomaly flag, giving you a full history of availability and performance.
 
-On top of that, the AI digest endpoint queries your monitors and all incidents from the last 7 days, computes per-monitor downtime summaries, builds a structured prompt, and sends it to a language model. What comes back is a concise plain-English report — incident counts, downtime durations, anything that needs attention — written in prose, not tables or bullet points.
+The alerting is designed to reduce noise. A single failed check (a blip) produces no email. Two consecutive failures trigger the down alert. If a monitor goes up and down four or more times in 15 minutes, one "unstable" email goes out instead of an up/down flood. Response times are analysed using Median Absolute Deviation — if a monitor is still technically up but responding much slower than its historical baseline, a slowdown warning goes out before it becomes an outage.
 
-The entire backend is serverless. There are no servers to manage, no processes to keep alive, and no infrastructure to babysit. EventBridge triggers the monitor Lambda on a schedule. API Gateway sits in front of the API Lambda with Cognito JWT authentication on every route. DynamoDB handles three tables: monitors, check history, and incidents. Everything is provisioned with Terraform.
+On top of that, the AI digest endpoint queries your monitors and all incidents from the last 7 days, computes per-monitor downtime summaries, builds a structured prompt, and sends it to GPT-4o-mini. What comes back is a concise plain-English report — incident counts, downtime durations, anything that needs attention — written in prose. A second EventBridge rule fires every Monday at 7am UTC and sends this digest to every user automatically, no button press required.
+
+The entire backend is serverless. There are no servers to manage, no processes to keep alive, and no infrastructure to babysit. DynamoDB handles three tables: monitors, check history, and incidents. Everything is provisioned with Terraform.
 
 If SES is unavailable when an alert needs to fire, the notification payload is pushed to an SQS queue instead of being dropped. A Dead Letter Queue is also attached to the monitor Lambda itself, so any invocation that crashes entirely lands somewhere inspectable rather than disappearing silently. Each monitor is processed inside its own error boundary, meaning one bad URL cannot take down the checks for everything else.
 
@@ -27,10 +29,16 @@ If SES is unavailable when an alert needs to fire, the notification payload is p
 EventBridge (60s schedule)
         |
         v
-Lambda (monitor)  -->  DynamoDB (checks, incidents)
-                   -->  SES (email alerts)
+Lambda (monitor)  -->  DynamoDB (checks, incidents, monitors)
+                   -->  SES (down / recovery / unstable / slowdown alerts)
                    -->  SQS (fallback queue if SES is down)
-                   -->  SQS DLQ (catches failed Lambda invocations)
+
+EventBridge (Monday 7am UTC)
+        |
+        v
+Lambda (digest-scheduler)  -->  DynamoDB (monitors, incidents)
+                            -->  OpenAI gpt-4o-mini (weekly digest)
+                            -->  SES (weekly digest email per user)
 
 Client
   |
@@ -39,7 +47,7 @@ API Gateway (Cognito JWT auth)
   |
   v
 Lambda (API)  -->  DynamoDB (monitors, checks, incidents)
-              -->  OpenRouter API (AI digest — LLM inference)
+              -->  OpenAI gpt-4o-mini (on-demand digest)
 ```
 
 ---
@@ -55,25 +63,68 @@ Lambda (API)  -->  DynamoDB (monitors, checks, incidents)
 | Queue | Amazon SQS |
 | Auth | Amazon Cognito |
 | API | Amazon API Gateway |
-| AI | OpenRouter (Mistral 7B) |
+| AI | OpenAI gpt-4o-mini |
 | Infrastructure | Terraform |
 | Frontend | Next.js (App Router) |
 
 ---
 
+## Smarter alerting
+
+The monitor Lambda implements three layers of noise reduction on top of basic up/down detection.
+
+**Consecutive failures threshold** — a single failed check does not trigger an alert. The Lambda tracks `consecutiveFailures` on each monitor record in DynamoDB and only creates an incident and sends an email once the count reaches the configured threshold (default: 2). A passing check resets the counter to zero. The threshold is configurable via the `CONSECUTIVE_THRESHOLD` environment variable.
+
+**Flapping detection** — when a monitor is unstable (oscillating between up and down), sending individual up and down emails creates more noise than signal. The Lambda queries the last 15 minutes of check results for the monitor and counts state transitions. If there are four or more transitions (configurable via `FLAP_THRESHOLD`), a single "unstable" alert goes out instead of the individual alerts. Recovery emails are also suppressed during a flapping window.
+
+**MAD anomaly detection** — response time spikes often precede outages. Before storing each check result, the Lambda queries the last 50 healthy check results for the monitor as a baseline, computes the median response time and the Median Absolute Deviation (MAD), and flags the current check as anomalous if its response time exceeds `median + 3 × MAD` and is above 500ms. Flagged checks are stored with `anomalyFlag: true` and trigger a "responding slowly" warning email (60-minute cooldown, separate from the down-alert cooldown). On the dashboard, clicking a monitor row expands a response time chart showing all recent checks with anomalous points marked in orange.
+
+---
+
 ## AI digest
 
-The `GET /digest` route is the AI layer. It works in five steps:
+The digest is available two ways: on demand via `GET /digest` from the dashboard, and automatically every Monday morning via the `digest-scheduler` Lambda.
 
-**1. Gather** — queries the monitors and incidents tables for the authenticated user.
+Both paths share the same logic:
 
-**2. Shape** — filters incidents to the last 7 days in code (the DynamoDB GSI on `userId-index` has no timestamp sort key, so date filtering runs in JavaScript). Computes per-monitor summaries: incident count, total resolved downtime in minutes, current status, active incident flag.
+**1. Gather** — queries the monitors and incidents tables for the user.
 
-**3. Prompt** — builds a structured JSON context object and writes it into a system prompt that instructs the model to produce 3–5 sentences of prose, using specific names and numbers, flagging anything that needs attention.
+**2. Shape** — filters incidents to the last 7 days in JavaScript. Computes per-monitor summaries: incident count, total resolved downtime in minutes, current status, active incident flag.
 
-**4. Call** — sends the prompt to OpenRouter using the OpenAI-compatible `/v1/chat/completions` endpoint. Uses `mistralai/mistral-7b-instruct:free` at `temperature: 0.4` and `max_tokens: 250`. No additional dependencies — uses Node.js 18+ native `fetch`.
+**3. Prompt** — builds a structured JSON context object and writes it into a prompt that instructs GPT-4o-mini to produce 3–5 sentences of prose using specific names and numbers, flagging anything that needs attention.
 
-**5. Return** — responds with `{ digest, generatedAt, stats }`. The frontend displays the digest in the AI card at the bottom of the dashboard.
+**4. Call** — sends the prompt to the OpenAI API. Uses `gpt-4o-mini` at `temperature: 0.4` and `max_tokens: 300`. No additional dependencies — uses Node.js native `fetch`.
+
+**5. Return / Send** — the on-demand route returns `{ digest, generatedAt, stats }` to the frontend. The scheduled route emails the digest directly with a stats line and a link back to the dashboard.
+
+---
+
+## Digest test harness
+
+The digest logic is extracted into pure functions in `lambda/functions/api/digest.js` (`buildDigestContext`, `buildPrompt`, `callDigestLLM`) so it can be tested without any AWS dependencies.
+
+`lambda/functions/api/digest.test.js` runs six fixture cases, each representing a distinct real-world scenario:
+
+| Case | Scenario | Pass condition |
+|---|---|---|
+| 1 | All healthy | Does not invent outage language |
+| 2 | One monitor with two outages | Names the right monitor, does not blame healthy ones |
+| 3 | Slow but never down | Does not claim the monitor went down |
+| 4 | Flapping monitor | Describes instability or repeated short outages |
+| 5 | Empty — no data | Acknowledges no data, invents nothing |
+| 6 | 15 monitors, only one troubled | Identifies the right monitor in the noise |
+
+Each fixture defines its own `check(digest)` function that evaluates the LLM output at sentence level, accounting for negation (so "no incidents" does not false-positive on the word "incidents"). The harness calls the LLM three times per case and reports pass/fail per run.
+
+```bash
+cd lambda/functions/api
+
+# Fact-shaping only (no API key needed)
+FACTS_ONLY=1 node digest.test.js
+
+# Full run with real LLM calls
+OPENAI_API_KEY=sk-... node digest.test.js
+```
 
 ---
 
@@ -85,7 +136,7 @@ The frontend supports the full auth lifecycle:
 
 - **Sign up** — email + password, with a verification code sent to the inbox
 - **Sign in** — JWT issued on success, stored in the browser session
-- **Forgot password** — sends a reset code to the user's email
+- **Forgot password** — sends a reset code to the user's email; the user enters the code and a new password to regain access
 - **Delete account** — users can permanently delete their Cognito account from the dashboard settings; all session data is cleared and they are redirected to the sign-in page
 
 ---
@@ -109,10 +160,10 @@ Create a `terraform.tfvars` file (this file is gitignored — never commit it):
 aws_region     = "af-south-1"
 aws_account_id = "your-account-id"
 alert_email    = "your@email.com"
-groq_api_key   = "your-openrouter-api-key"
+ai_api_key     = "your-openai-api-key"
 ```
 
-The `groq_api_key` variable holds your OpenRouter API key. Get one free at `openrouter.ai` — no credit card required.
+The `ai_api_key` variable holds your OpenAI API key. Get one at `platform.openai.com`.
 
 **3. Deploy**
 
@@ -136,11 +187,17 @@ I had never used Terraform, DynamoDB, EventBridge, or SES before this project. I
 
 Adding AI to the project meant learning how language models actually work — not at the model level, but at the integration level. The prompt is everything. The quality of what the LLM returns is determined entirely by the structure and clarity of what you send it. That meant thinking carefully about what data matters, how to compute it, and how to describe it to a model that has no other context.
 
+Building the test harness for the digest made that concrete. The first version of the check functions failed on correct LLM outputs because they matched the word "incident" inside "no incidents." Fixing that meant writing sentence-level checks that account for negation — a small thing that taught a lot about the gap between "the model said the right thing" and "I correctly measured whether the model said the right thing."
+
 That experience is the reason cloud infrastructure does not intimidate me anymore. Before Sentinel, AWS felt like a black box. After it, it feels like a tool.
 
 ---
 
 ## What broke and how I fixed it
+
+**AI digest returning 502**
+
+The original implementation used OpenRouter with `mistralai/mistral-7b-instruct:free`. The free tier was unreliable — requests timed out or returned empty responses frequently. Switched to OpenAI `gpt-4o-mini`, which is fast, cheap, and consistent. Also renamed the Terraform variable from `groq_api_key` to `ai_api_key` to reflect that this key is for AI features broadly, not a specific provider.
 
 **SES not sending any emails**
 
@@ -164,7 +221,7 @@ The API Gateway authorizer was configured but initially had the wrong `authoriza
 
 **SES alert dropped silently when the service was temporarily unavailable**
 
-SES can return throttling or service errors under certain conditions. The original code called `ses.send()` directly with no error handling — if it threw, the alert was lost and nothing in the logs indicated why. Fixed by wrapping the SES call in a try/catch and pushing the full notification payload to an SQS queue on failure. The queue retains messages for 24 hours, giving time to reprocess them once SES recovers. A Dead Letter Queue is also attached to the monitor Lambda itself so that invocation-level failures are captured even when the per-monitor error boundary doesn't catch them.
+SES can return throttling or service errors under certain conditions. The original code called `ses.send()` directly with no error handling — if it threw, the alert was lost and nothing in the logs indicated why. Fixed by wrapping the SES call in a try/catch and pushing the full notification payload to an SQS queue on failure. The queue retains messages for 24 hours, giving time to reprocess them once SES recovers.
 
 **One failing monitor was silently killing checks for all other monitors**
 
@@ -174,13 +231,12 @@ The monitor Lambda processes all active monitors in a `Promise.all`. If one moni
 
 ## Technical notes
 
-- **Modular Terraform** — each AWS service (Cognito, DynamoDB, Lambda, EventBridge, API Gateway, SES) lives in its own `modules/` directory with its own `main.tf`, `variables.tf`, and `outputs.tf`. Module outputs are passed as inputs to dependent modules (e.g., DynamoDB table ARNs into the Lambda module for IAM policies).
-- **Three DynamoDB tables** — `monitors` (user-defined URLs), `checks` (every result from every check, with response time), `incidents` (open/closed outage records). DynamoDB's on-demand billing means no capacity planning needed for this scale.
+- **Modular Terraform** — each AWS service (Cognito, DynamoDB, Lambda, EventBridge, API Gateway, SES) lives in its own `modules/` directory with its own `main.tf`, `variables.tf`, and `outputs.tf`. Module outputs are passed as inputs to dependent modules.
+- **Three DynamoDB tables** — `monitors` (user-defined URLs), `checks` (every result from every check, with response time and anomaly flag), `incidents` (open/closed outage records). DynamoDB's on-demand billing means no capacity planning needed for this scale.
 - **Daemon pattern** — the monitor Lambda queries all monitors, checks each URL with a timeout, writes the result to `checks`, and updates or creates an incident record if the status changed. The entire function is stateless — it reads current state from DynamoDB at the start of every invocation.
+- **MAD over standard deviation** — MAD (Median Absolute Deviation) is used for anomaly detection rather than mean and standard deviation because it is robust to outliers. A single very long response time does not skew the baseline, which matters for monitoring where occasional spikes are common.
 - **AI prompt engineering** — the digest prompt passes a structured JSON context object rather than raw DynamoDB items. This means the model sees computed values (total downtime in minutes, incident counts per monitor, current status) rather than raw timestamps and boolean flags. Lower temperature (`0.4`) keeps output factual.
 - **LLM timeout** — the API Lambda timeout is set to 29 seconds (API Gateway's hard limit is 30). LLM API calls typically respond in 2–5 seconds, but this leaves headroom for slow responses without hitting the Gateway timeout.
 - **Cognito full auth lifecycle** — sign up triggers a verification email via Cognito's built-in email provider. Password reset uses the `forgotPassword` / `confirmForgotPassword` flow. Account deletion calls `deleteUser` on the Cognito client and clears the local session, then redirects to sign in.
-- **Cognito session caching** — `getIdToken()` is called on every API request from the frontend. Previously each call instantiated a new `CognitoUserPool`, fetched the current user, and read from localStorage. Now the session is cached in a module-level variable and reused until it is within 5 minutes of its expiry, at which point it is refreshed. The cache is cleared immediately on sign-out.
+- **Cognito session caching** — `getIdToken()` is called on every API request from the frontend. The session is cached in a module-level variable and reused until it is within 5 minutes of its expiry, at which point it is refreshed. The cache is cleared immediately on sign-out.
 - **SQS alert queue** — the queue uses a 60-second visibility timeout so that if something reads a message and fails to process it, it becomes available again for retry. Messages are retained for 24 hours. The same queue doubles as the Lambda's Dead Letter Queue, keeping the infrastructure footprint minimal.
-
----
