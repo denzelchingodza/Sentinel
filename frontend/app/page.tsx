@@ -209,10 +209,10 @@ export default function Home() {
               <div data-reveal data-delay="0" className="ch" style={CARD}>
                 <h2 style={HEADING}>Your apps, checked<br />every 60 seconds.</h2>
                 <p style={BODY}>
-                  Add a URL and EventBridge fires Lambda on a fixed schedule. If it goes down, SES alerts you with what failed and when. When it recovers, you hear about that too.
+                  Add a URL and EventBridge fires Lambda on a fixed schedule. Two consecutive failures trigger the down alert — single blips are ignored. When it recovers, you hear about that too.
                 </p>
                 <div style={{ display: "flex", borderTop: "1px solid var(--bd-faint)", paddingTop: 18, marginTop: 22 }}>
-                  {[["60s", "interval"], ["24h", "history"], ["Email", "alerts"]].map(([val, lbl]) => (
+                  {[["60s", "interval"], ["2×", "to alert"], ["Email", "alerts"]].map(([val, lbl]) => (
                     <div key={lbl} style={{ flex: 1, borderRight: "1px solid var(--bd-faint)" }}>
                       <div style={{ fontSize: 15, fontWeight: 700, color: "#FF9900" }}>{val}</div>
                       <div style={{ fontSize: 10, color: "var(--cs)", marginTop: 3, letterSpacing: "0.04em" }}>{lbl}</div>
@@ -259,15 +259,15 @@ export default function Home() {
 
               <div data-reveal data-delay="180" className="ch" style={CARD}>
                 <h2 style={{ ...HEADING, marginBottom: 6 }}>AI that reads<br />your infra.</h2>
-                <span style={{ fontSize: 10, color: "#FF9900", letterSpacing: "0.06em", marginBottom: 14, display: "block", fontWeight: 700 }}>live now</span>
+                <span style={{ fontSize: 10, color: "#FF9900", letterSpacing: "0.06em", marginBottom: 14, display: "block", fontWeight: 700 }}>powered by gpt-4o-mini</span>
                 <p style={{ ...BODY, marginBottom: 22 }}>
-                  Monitoring tells you what happened. The AI digest tells you what it means — in plain English, with real numbers, every time you ask.
+                  Monitoring tells you what happened. The AI digest tells you what it means — in plain English, with real numbers. On demand from the dashboard, or automatically every Monday morning in your inbox.
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {[
                     { title: "7-day incident digest", desc: "Downtime durations, incident counts, and what needs attention — written in prose." },
-                    { title: "Per-monitor analysis", desc: "Each URL gets its own breakdown: response time, uptime, and active incidents." },
-                    { title: "On demand", desc: "Generate a fresh digest any time from your dashboard. No scheduled emails, no noise." },
+                    { title: "Anomaly detection", desc: "Response time spikes flagged statistically before the monitor goes down." },
+                    { title: "Weekly email, automatically", desc: "Every Monday at 7am — no button press, no dashboard visit required." },
                   ].map((f) => (
                     <div key={f.title} style={{ display: "flex", gap: 12, paddingBottom: 12, borderBottom: "1px solid var(--bd-faint)" }}>
                       <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#FF9900", marginTop: 5, flexShrink: 0 }} />
@@ -280,6 +280,52 @@ export default function Home() {
                 </div>
               </div>
 
+            </div>
+          </div>
+
+          {/* SMARTER ALERTING STRIP */}
+          <div data-reveal data-delay="0" className="ch" style={{ ...CARD, marginTop: 14, flexDirection: "row", alignItems: "flex-start", gap: 40, flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 220px" }}>
+              <h2 style={{ ...HEADING, fontSize: 18, marginBottom: 8 }}>Alerting that doesn't<br />cry wolf.</h2>
+              <p style={{ ...BODY, fontSize: 12 }}>Three layers of noise reduction built in.</p>
+            </div>
+            <div style={{ flex: "2 1 400px", display: "flex", gap: 14, flexWrap: "wrap" }}>
+              {[
+                { label: "Consecutive failures", desc: "Waits for 2 failures in a row before alerting. Single blips are ignored." },
+                { label: "Flapping detection", desc: "4+ state changes in 15 min → one "unstable" email instead of an up/down flood." },
+                { label: "Slowdown warning", desc: "MAD-based response time analysis flags degradation before the monitor goes down." },
+              ].map((item) => (
+                <div key={item.label} style={{ flex: "1 1 160px", background: "rgba(255,153,0,0.04)", border: "1px solid rgba(255,153,0,0.1)", borderRadius: 10, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#FF9900", marginBottom: 6 }}>{item.label}</div>
+                  <div style={{ fontSize: 11, color: "var(--cs)", lineHeight: 1.7 }}>{item.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* SCREENSHOTS */}
+          <div data-reveal data-delay="0" style={{ marginTop: 64 }}>
+            <div style={{ marginBottom: 28 }}>
+              <h2 style={{ ...HEADING, fontSize: 20, marginBottom: 8 }}>What it looks like.</h2>
+              <p style={{ ...BODY, fontSize: 12, color: "var(--cs)" }}>Click any screenshot to see it full size.</p>
+            </div>
+            <div className="screenshot-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+              {[
+                { src: "/screenshots/dashboard.png",      label: "Dashboard — monitors + AI digest"  },
+                { src: "/screenshots/response-chart.png", label: "Response time chart (click to expand)" },
+              ].map((shot) => (
+                <a key={shot.src} href={shot.src} target="_blank" rel="noopener"
+                  style={{ display: "block", borderRadius: 12, overflow: "hidden", border: "1px solid var(--bd)", transition: "border-color 0.2s ease", textDecoration: "none" }}
+                  className="ch">
+                  <img src={shot.src} alt={shot.label}
+                    style={{ width: "100%", display: "block", aspectRatio: "16/10", objectFit: "cover", background: "var(--bg-card)" }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                  <div style={{ padding: "10px 14px", background: "var(--bg-card)" }}>
+                    <span style={{ fontSize: 11, color: "var(--cs)", fontWeight: 500 }}>{shot.label}</span>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
 
@@ -308,7 +354,7 @@ export default function Home() {
             <p style={{ fontSize: 12, color: "var(--cs)", lineHeight: 1.7, margin: "0 0 16px", maxWidth: 300 }}>
               URL monitoring with AI-powered incident analysis, built on AWS. Checks every 60 seconds, alerts on downtime, explains what happened. A personal project by Denzel Chingodza.
             </p>
-            <span style={{ fontSize: 11, color: "var(--cd)" }}>Lambda · DynamoDB · SES · Cognito · SQS · EventBridge · OpenRouter · af-south-1</span>
+            <span style={{ fontSize: 11, color: "var(--cd)" }}>Lambda · DynamoDB · SES · Cognito · SQS · EventBridge · OpenAI · af-south-1</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between" }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
