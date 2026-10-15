@@ -292,7 +292,7 @@ export default function Home() {
             <div style={{ flex: "2 1 400px", display: "flex", gap: 14, flexWrap: "wrap" }}>
               {[
                 { label: "Consecutive failures", desc: "Waits for 2 failures in a row before alerting. Single blips are ignored." },
-                { label: "Flapping detection", desc: "4+ state changes in 15 min → one "unstable" email instead of an up/down flood." },
+                { label: "Flapping detection", desc: "4+ state changes in 15 min → one 'unstable' email instead of an up/down flood." },
                 { label: "Slowdown warning", desc: "MAD-based response time analysis flags degradation before the monitor goes down." },
               ].map((item) => (
                 <div key={item.label} style={{ flex: "1 1 160px", background: "rgba(255,153,0,0.04)", border: "1px solid rgba(255,153,0,0.1)", borderRadius: 10, padding: "14px 16px" }}>
