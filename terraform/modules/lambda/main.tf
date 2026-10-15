@@ -115,7 +115,7 @@ resource "aws_lambda_function" "api" {
       MONITORS_TABLE  = var.monitors_table_name
       CHECKS_TABLE    = var.checks_table_name
       INCIDENTS_TABLE = var.incidents_table_name
-      GROQ_API_KEY    = var.groq_api_key
+      OPENAI_API_KEY = var.ai_api_key
     }
   }
 }

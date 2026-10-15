@@ -243,34 +243,34 @@ ${JSON.stringify(context, null, 2)}
 
 Write a concise plain-English digest. Be specific — use monitor names, incident counts, and downtime durations. Highlight anything that needs attention. If everything looks healthy, say so clearly. Keep it to 3-5 sentences. Write it as flowing prose with no bullet points or headers.`;
 
-      // ── Step 4: Call the LLM (Groq — free, runs Llama 3) ─────────────────
-      // Groq's API is OpenAI-compatible. We send our prompt, get back generated text.
-      // The model predicts the next token repeatedly until it decides it's done.
-      const GROQ_API_KEY = process.env.GROQ_API_KEY;
-      if (!GROQ_API_KEY) return response(500, { error: "GROQ_API_KEY not configured" });
+      // ── Step 4: Call the LLM (OpenRouter — free, no card required) ───────────
+      // OpenRouter is OpenAI-compatible. We use mistralai/mistral-7b-instruct
+      // which is free on their free tier — no billing needed.
+      const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+      if (!OPENAI_API_KEY) return response(500, { error: "OPENAI_API_KEY not configured" });
 
-      const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const llmRes = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          "Authorization": `Bearer ${OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "gpt-4o-mini",
           messages: [{ role: "user", content: prompt }],
           max_tokens: 250,
-          temperature: 0.4, // low temperature = more factual, less creative
+          temperature: 0.4,
         }),
       });
 
-      if (!groqRes.ok) {
-        const err = await groqRes.text();
-        console.error("Groq error:", err);
+      if (!llmRes.ok) {
+        const err = await llmRes.text();
+        console.error("OpenRouter error:", err);
         return response(502, { error: "AI service unavailable" });
       }
 
-      const groqData = await groqRes.json();
-      const digest = groqData.choices?.[0]?.message?.content?.trim();
+      const llmData = await llmRes.json();
+      const digest = llmData.choices?.[0]?.message?.content?.trim();
       if (!digest) return response(502, { error: "No response from AI" });
 
       // ── Step 5: Return it ─────────────────────────────────────────────────
